@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  googleID        String       @id
+  username        String
+  avatar          String
+  email           String       @unique
+  isPassphraseSet Boolean      @default(false)
+  keyPair         UserKeyPair?
+  files           Files[]
+  FileShare       FileShare[]
+}
+
+model UserKeyPair {
+  googleID   String @id
+  passphrase String
+  publicKey  String
+  privateKey String
+  iv         String
+  user       User   @relation(fields: [googleID], references: [googleID])
+}
+
+model Files {
+  id           String   @id @default(uuid())
+  googleID     String
+  fileName     String
+  fileNameIV   String
+  symmetricKey String
+  fileIV       String
+  fileSize     BigInt   @default(0) @db.BigInt
+  expireAt     DateTime @default(dbgenerated("(now() + interval '24 hours')"))
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user      User        @relation(fields: [googleID], references: [googleID], onDelete: Cascade)
+  FileShare FileShare[]
+}
+
+model FileShare {
+  id                    String   @id @default(cuid()) // Internal ID
+  shareId               String   @unique // Public ID used in the URL
+  sharedFileName        String // New S3 file path for the shared file (/upload/share/...)
+  originalFileId        String // Reference to the original file
+  originalFile          Files    @relation(fields: [originalFileId], references: [id])
+  passphraseHash        String // bcrypt hash of the passphrase
+  encryptedSymmetricKey String // Encrypted with derived passphrase key
+  fileSize              BigInt   @default(0) @db.BigInt
+  iv                    String // IV used during AES encryption
+  originalName          String // User-friendly original filename (e.g. resume.pdf)
+  createdAt             DateTime @default(now())
+  expireAt              DateTime @default(dbgenerated("(now() + interval '24 hours')")) // Optional expiry
+  userId                String? // User who shared it (optional)
+  user                  User?    @relation(fields: [userId], references: [googleID])
+  // @@unique([originalFileId, passphraseHash]) // Prevent duplicate share of files based on passphrase
+
+  // @@unique([originalFileId]) // Prevent duplicate shares of the same file
+  @@unique([originalFileId, userId]) // Prevent duplicate of file per user
+}
