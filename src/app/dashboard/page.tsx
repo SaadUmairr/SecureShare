@@ -10,8 +10,6 @@ import { UserContextProvider } from '@/context/user.context';
 
 export default async function Page() {
   const session = await auth();
-  console.log('SESSION: ', session);
-  console.log('user: ', session?.user);
   return (
     <UserContextProvider>
       <SidebarProvider>

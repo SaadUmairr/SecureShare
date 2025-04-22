@@ -34,7 +34,6 @@ export function KeyPairContextProvider({
   const [privateKey, setPrivateKey] = useState<CryptoKeyType>(null);
 
   async function KeyPairGenerationHandler() {
-    console.log('PASSPHRASE IN KEYPAIR CONTEXT: ', passphrase);
     const { keyPair, exportedPublicKeyBase64 } =
       await generateAsymmetricKeyPair();
 
@@ -67,9 +66,7 @@ export function KeyPairContextProvider({
 
   async function KeyPairMainHandler() {
     const localKeyPair = await loadLocalKeyPairRecord();
-    console.log('LOCALKEYPAIR: ', localKeyPair);
     if (localKeyPair) {
-      console.log('LOCAL PAIR EXISTS');
       const { importedPublicKey, decryptedPrivateKey } = await KeyPairDecryptor(
         googleID,
         passphrase,
@@ -100,28 +97,13 @@ export function KeyPairContextProvider({
       setPrivateKey(decryptedPrivateKey);
       return;
     }
-    console.log('GENERATING NEW KEYPAIR');
     await KeyPairGenerationHandler();
   }
 
-  // useEffect(() => {
-  //   // const isProtectedRoute =
-  //   //     pathname === "/upload" || pathname === "/files";
-  //   // if (isProtectedRoute) router.replace("/");
-  //   KeyPairMainHandler();
-  //   console.log('PUBLIC KEY: ', publicKey);
-  //   console.log('PRIVATE KEY: ', privateKey);
-  // }, []);
   useEffect(() => {
-    console.log('GOOGLEID: ', googleID, ' Passphrase: ', passphrase);
     if (!googleID || !passphrase) return;
     KeyPairMainHandler();
   }, [googleID, passphrase]);
-
-  useEffect(() => {
-    console.log('Updated PUBLIC KEY: ', publicKey);
-    console.log('Updated PRIVATE KEY: ', privateKey);
-  }, [publicKey, privateKey]);
 
   return (
     <KeyPairContext value={{ publicKey, privateKey }}>

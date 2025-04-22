@@ -99,30 +99,17 @@ export const PassphraseInput = () => {
   // Handle submit
   const handleSubmit = async () => {
     if (mode === 'setup') {
-      // Save the passphrase (usually, hash and store it in your DB) then redirect.
-      // Optionally, store it in IndexedDB or context for current session.
-      // Example:
-      // await savePassphrase(passphrase);
-      console.log('RECEIVED PASSPHRASE: ', passphraseState);
       setPassphrase(passphraseState);
-
       savePassphrase(passphraseState);
-
-      // const updatePassphraseStatusResponse =
-      //   await setPassphraseStatus(googleID);
-      // console.log('UPDATE PASS STATUS: ', updatePassphraseStatusResponse);
       toast.success('Passphrase set successfully!');
       router.replace('/auth/upload');
     } else if (mode === 'enter') {
-      // Validate the entered passphrase (e.g., compare with hash in DB)
-      // If valid, use it to decrypt the user's keypair (and store securely).
       const keypair = await getUserKeyPair(googleID);
       if (!keypair) {
         toast.error('USER DETAILS NOT AVAILABLE');
         return;
       }
 
-      console.log('KEYPAIR: hash:: ', keypair.passphrase);
       const passphraseWithPepper = await PassphrasePepper(
         passphraseState,
         googleID,
@@ -137,18 +124,15 @@ export const PassphraseInput = () => {
         toast.error('INCORRECT PASSPRHASE');
         return;
       }
-      console.log('RECEIVED PASSPHRASE: ENTER MODE::  ', passphraseState);
       toast.success('Passphrase accepted!');
       router.replace('/auth/upload');
     }
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  // Check if passphrases match (only relevant in setup mode)
   const passphrasesMatch =
     mode === 'enter' || passphraseState === confirmPassphrase;
   const isFormValid =
@@ -156,7 +140,6 @@ export const PassphraseInput = () => {
       ? passphraseState.length > 0
       : Object.values(validationChecks).every(Boolean) && passphrasesMatch;
 
-  // UI animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

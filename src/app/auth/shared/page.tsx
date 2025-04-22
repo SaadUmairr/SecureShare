@@ -8,7 +8,6 @@ export default async function SharedPage() {
 
   return (
     <>
-      <p>SHARED FILES</p>
       <SharedFiles />
     </>
   );

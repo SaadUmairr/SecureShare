@@ -31,7 +31,7 @@ export const deleteObjectFromS3 = async (key: string) => {
     });
 
     const response = await s3.send(deleteCommand);
-    console.log('DELETE RESPONSE: ', response);
+    return response;
   } catch (error) {
     throw new Error(`File deletion failed: ${(error as Error).message}`);
   }

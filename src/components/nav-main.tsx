@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 export function NavMain() {
   return (
@@ -17,25 +18,25 @@ export function NavMain() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href="upload">
+            <Link href="upload">
               <Upload /> Upload Files
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <a href="shared">
+          <Link href="/auth/shared">
             <SidebarMenuButton>
-              <SquareArrowUpRightIcon /> shared files
+              <SquareArrowUpRightIcon /> Shared files
             </SidebarMenuButton>
-          </a>
+          </Link>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <a href="files">
+          <Link href="/auth/files">
             <SidebarMenuButton>
               <FilesIcon />
-              uploaded files
+              Uploaded files
             </SidebarMenuButton>
-          </a>
+          </Link>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>

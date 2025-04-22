@@ -58,7 +58,6 @@ export async function Encryptor(
   if (typeof window === 'undefined') {
     throw new Error('❌ This function should only run on the client side!');
   }
-  console.log('GOOGLE ID in ENC: ', googleID);
   const filesArray = Array.isArray(files) ? files : [files];
   const encryptedFiles: EncryptedFile[] = [];
 
@@ -164,162 +163,6 @@ export async function EncryptArrayBuffer(
   );
   return { encryptedData, iv, encryptedName };
 }
-// type UploadModeParams = {
-//   mode: 'upload';
-//   publicKey: CryptoKey;
-// };
-
-// type ShareModeParams = {
-//   mode: 'share';
-//   passphraseKey: CryptoKey;
-// };
-
-// type EncryptorParams = UploadModeParams | ShareModeParams;
-
-// export async function Encryptor(
-//   fileInput: FileWithPath | FileWithPath[] | ArrayBuffer,
-//   googleID: string,
-//   params: EncryptorParams,
-// ): Promise<EncryptedFile[]> {
-//   if (typeof window === 'undefined') {
-//     throw new Error('❌ This function should only run on the client side!');
-//   }
-
-//   if (params.mode === 'upload') {
-//     if (!googleID || !params.publicKey) {
-//       throw new Error('Missing required parameters for upload mode');
-//     }
-
-//     const filesArray = Array.isArray(fileInput) ? fileInput : [fileInput];
-//     const encryptedFiles: EncryptedFile[] = [];
-
-//     for (const file of filesArray as FileWithPath[]) {
-//       const fileBuffer = await file.arrayBuffer();
-//       const { symmetricKey, rawSymmetricKey } =
-//         await generateSymmetricKeyPair();
-//       const contentIV = crypto.getRandomValues(new Uint8Array(12));
-
-//       const encryptedData = await crypto.subtle.encrypt(
-//         { name: 'AES-GCM', iv: contentIV },
-//         symmetricKey,
-//         fileBuffer,
-//       );
-
-//       const encryptedBlob = new Blob([encryptedData], {
-//         type: 'application/octet-stream',
-//       });
-
-//       const encryptedExportedKeyBuffer = await crypto.subtle.encrypt(
-//         { name: 'RSA-OAEP' },
-//         params.publicKey,
-//         rawSymmetricKey,
-//       );
-
-//       const encryptedSymmetricKey = btoa(
-//         String.fromCharCode(...new Uint8Array(encryptedExportedKeyBuffer)),
-//       );
-
-//       const contentIVBase64 = btoa(String.fromCharCode(...contentIV));
-
-//       const fileNameBuffer = new TextEncoder().encode(file.name);
-//       const fileNameIV = crypto.getRandomValues(new Uint8Array(12));
-
-//       const encryptedFilenameBuffer = await crypto.subtle.encrypt(
-//         { name: 'AES-GCM', iv: fileNameIV },
-//         symmetricKey,
-//         fileNameBuffer,
-//       );
-
-//       const encryptedFileNameBase64 = btoa(
-//         String.fromCharCode(...new Uint8Array(encryptedFilenameBuffer)),
-//       );
-//       const filenameIVBase64 = btoa(String.fromCharCode(...fileNameIV));
-//       const encryptedFileName = toUrlSafeBase64(encryptedFileNameBase64);
-
-//       await saveFileRecordInDb({
-//         fileName: encryptedFileName,
-//         fileNameIV: filenameIVBase64,
-//         symmetricKey: encryptedSymmetricKey,
-//         googleID,
-//         fileIV: contentIVBase64,
-//         fileSize: file.size,
-//         expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-//       });
-
-//       encryptedFiles.push({
-//         fileName: {
-//           encrypted: encryptedFileName,
-//           iv: filenameIVBase64,
-//           original: file.name,
-//         },
-//         encryptedBlob,
-//         encryptedSymmetricKey,
-//         iv: contentIVBase64,
-//       });
-//     }
-
-//     return encryptedFiles;
-//   }
-
-//   if (params.mode === 'share') {
-//     if (!(fileInput instanceof ArrayBuffer)) {
-//       throw new Error('In share mode, file must be of type ArrayBuffer');
-//     }
-
-//     const contentIV = crypto.getRandomValues(new Uint8Array(12));
-
-//     const encryptedData = await crypto.subtle.encrypt(
-//       { name: 'AES-GCM', iv: contentIV },
-//       params.passphraseKey,
-//       fileInput,
-//     );
-
-//     const encryptedBlob = new Blob([encryptedData], {
-//       type: 'application/octet-stream',
-//     });
-
-//     const contentIVBase64 = btoa(String.fromCharCode(...contentIV));
-
-//     return [
-//       {
-//         fileName: {
-//           encrypted: '',
-//           iv: '',
-//           original: '',
-//         },
-//         encryptedBlob,
-//         encryptedSymmetricKey: '',
-//         iv: contentIVBase64,
-//       },
-//     ];
-//   }
-
-//   throw new Error('Invalid mode provided');
-// }
-
-// export async function EncryptArrayBuffer(
-//   fileBuffer: ArrayBuffer,
-//   derivedKey: CryptoKey,
-// ): Promise<{
-//   encryptedData: ArrayBuffer;
-//   iv: Uint8Array;
-// }> {
-//   if (typeof window === 'undefined') {
-//     throw new Error('❌ This function should only run on the client side!');
-//   }
-//   const iv = crypto.getRandomValues(new Uint8Array(12)); // AES-GCM recommends 12-byte IV
-
-//   const encryptedData = await crypto.subtle.encrypt(
-//     {
-//       name: 'AES-GCM',
-//       iv,
-//     },
-//     derivedKey,
-//     fileBuffer,
-//   );
-
-//   return { encryptedData, iv };
-// }
 
 function toUrlSafeBase64(base64: string): string {
   if (typeof window === 'undefined') {
@@ -398,90 +241,12 @@ export async function decryptFiles(
   return decryptedFiles;
 }
 
-// *
-// export interface DecryptedFile {
-//   fileName: string;
-//   data: ArrayBuffer;
-// }
-
-// export type DecryptionMode =
-//   | {
-//       mode: 'upload';
-//       privateKey: CryptoKey;
-//     }
-//   | {
-//       mode: 'share';
-//       passphraseKey: CryptoKey;
-//     };
-
-// /**
-//  * Decrypts one or multiple encrypted files.
-//  * @param encryptedFiles A single EncryptedFile object or an array of them.
-//  * @param options Decryption mode options (upload or share).
-//  * @returns A Promise that resolves to an array of DecryptedFile objects.
-//  */
-// export async function decryptFiles(
-//   encryptedFiles: EncryptedFile | EncryptedFile[],
-//   options: DecryptionMode,
-// ): Promise<DecryptedFile[]> {
-//   if (typeof window === 'undefined') {
-//     throw new Error('❌ This function should only run on the client side!');
-//   }
-
-//   const encryptedFilesArray = Array.isArray(encryptedFiles)
-//     ? encryptedFiles
-//     : [encryptedFiles];
-
-//   const decryptedFiles: DecryptedFile[] = [];
-
-//   for (const encryptedFile of encryptedFilesArray) {
-//     const iv = base64ToArrayBuffer(encryptedFile.iv);
-//     const encryptedDataBuffer = await encryptedFile.encryptedBlob.arrayBuffer();
-
-//     let symmetricKey: CryptoKey;
-
-//     if (options.mode === 'upload') {
-//       const encryptedKeyBuffer = base64ToArrayBuffer(
-//         encryptedFile.encryptedSymmetricKey,
-//       );
-//       const symmetricKeyRaw = await crypto.subtle.decrypt(
-//         { name: 'RSA-OAEP' },
-//         options.privateKey,
-//         encryptedKeyBuffer,
-//       );
-//       symmetricKey = await crypto.subtle.importKey(
-//         'raw',
-//         symmetricKeyRaw,
-//         { name: 'AES-GCM' },
-//         false,
-//         ['decrypt'],
-//       );
-//     } else {
-//       symmetricKey = options.passphraseKey;
-//     }
-
-//     const decryptedData = await crypto.subtle.decrypt(
-//       { name: 'AES-GCM', iv },
-//       symmetricKey,
-//       encryptedDataBuffer,
-//     );
-
-//     decryptedFiles.push({
-//       fileName: encryptedFile.fileName.original,
-//       data: decryptedData,
-//     });
-//   }
-
-//   return decryptedFiles;
-// }
-
 export async function FileNameDecryptor(
   fileName: string,
   fileNameIVBase64: string,
   encryptedSymmetricKeyBase64: string,
   privateKey: CryptoKey,
 ) {
-  console.log('fileName: ', fileName);
   if (typeof window === 'undefined') {
     throw new Error('❌ This function should only run on the client side!');
   }
@@ -617,40 +382,9 @@ export async function FileDownloadManager({
 
     await triggerDownload(decryptedFile, originalName);
   } catch (err) {
-    console.error(err);
+    throw new Error((err as Error).message);
   }
 }
-
-// export async function FileDownloadManager({
-//   fileName,
-//   encryptedSymmetricKey,
-//   fileIV,
-//   privateKey,
-//   originalName,
-// }: FileDownloadManagerProp) {
-//   try {
-//     const encryptedFileArrayBuffer = await fetchEncryptedFile(fileName);
-//     const encryptedBlob = new Blob([encryptedFileArrayBuffer]);
-
-//     const result = await decryptFiles(
-//       {
-//         fileName: {
-//           encrypted: fileName,
-//           iv: fileIV,
-//           original: originalName,
-//         },
-//         encryptedBlob,
-//         encryptedSymmetricKey,
-//         iv: fileIV,
-//       },
-//       { mode: 'upload', privateKey },
-//     );
-
-//     await triggerDownload(result[0].data, result[0].fileName);
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
 
 export async function FileShareManager({
   googleID,
@@ -701,8 +435,6 @@ export async function FileShareManager({
     const shareFileIVBase64 = btoa(String.fromCharCode(...shareFileIV));
     const encryptedShareFileBlob = new Blob([encryptedShareFile.encryptedData]);
     const encryptedFileName = toUrlSafeBase64(encryptedShareFile.encryptedName);
-    console.log('BUFFER: ', encryptedShareFile.encryptedData);
-    console.log('ENC NAME: ', encryptedShareFile.encryptedName);
     await saveFileShareRecordInDb({
       userId: googleID,
       shareId,
@@ -722,6 +454,6 @@ export async function FileShareManager({
     });
     await axios.put(presignedURL, encryptedShareFileBlob);
   } catch (err) {
-    console.error(err);
+    throw new Error((err as Error).message);
   }
 }

@@ -144,8 +144,7 @@ export function ShareFile({
       if (!isSame) {
         setError('Incorrect passphrase. Please try again.');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError('Error verifying passphrase. Please try again.');
     } finally {
       setLoading(false);
@@ -184,8 +183,7 @@ export function ShareFile({
       setTimeout(() => {
         setDownloadSuccess(false);
       }, 3000);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError('Failed to decrypt the file. Please try again.');
     } finally {
       setDownloading(false);

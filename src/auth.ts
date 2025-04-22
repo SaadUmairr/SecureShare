@@ -37,7 +37,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, account }) {
       // Only set googleID during sign-in
       if (account) {
-        console.log('JWT CALLBACK: ', account.providerAccountId);
         token.googleID = account.providerAccountId;
       }
       return token;

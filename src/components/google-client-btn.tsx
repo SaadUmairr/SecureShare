@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 
 export function GoogleClientButton() {
   const handleLogin = async () => {
-    console.log('LOGGIN IN ');
-    // Your login logic here (e.g., next-auth signIn())
     await GoogleLoginHandler();
   };
 

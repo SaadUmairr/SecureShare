@@ -7,13 +7,11 @@ export default async function Page({
 }: {
   params: Promise<{ shareId: string }>;
 }) {
-  const { shareId } = await params; // Use the first part of the catch-all
+  const { shareId } = await params;
   const details = await fetchFileDetailFromShareId(shareId);
 
-  console.log('FILE DETAILS: ', details);
-
   if (!details) {
-    notFound(); // Render 404 if no file found
+    notFound();
   }
 
   return (

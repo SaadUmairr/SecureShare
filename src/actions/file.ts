@@ -12,20 +12,6 @@ interface saveFileRecordInDbProp {
   expireAt: Date;
 }
 
-// interface saveFileShareRecordInDbProp {
-//   fileId: string;
-//   shareId: string;
-//   fileName: string;
-//   fileNameIV: string;
-//   passphraseHash: string;
-//   symmetricKey: string;
-//   originalName: string;
-//   fileIV: string;
-//   fileSize: number;
-//   userId: string;
-//   expireAt: Date;
-// }
-
 export async function saveFileRecordInDb({
   fileName,
   fileNameIV,
@@ -35,12 +21,6 @@ export async function saveFileRecordInDb({
   fileSize,
   expireAt,
 }: saveFileRecordInDbProp) {
-  console.log('FILENAME: ', fileName);
-  console.log('FILENAME IV: ', fileNameIV);
-  console.log('SYMMETRIC KEY: ', symmetricKey);
-  console.log('fileIV: ', fileIV);
-  console.log('GOOGLEID: ', googleID);
-
   try {
     const response = await prisma.files.create({
       data: {
@@ -53,8 +33,6 @@ export async function saveFileRecordInDb({
         expireAt,
       },
     });
-
-    console.log('FILE RECORD RESPONSE: ', response);
   } catch (error) {
     throw new Error(`ERROR SAVING FILE RECORD: ${(error as Error).message}`);
   }
@@ -63,7 +41,6 @@ export async function saveFileRecordInDb({
 export async function getAllFiles(googleID: string) {
   try {
     const records = await prisma.files.findMany({ where: { googleID } });
-    console.log('records: ', records);
     return records;
   } catch (error) {
     throw new Error(`ERROR FETCHING FILE RECORD: ${(error as Error).message}`);
@@ -84,7 +61,6 @@ export async function CheckSharedFileStatus(fileName: string) {
     });
     return !!existingShare; // returns true if shared, false otherwise
   } catch (error) {
-    console.error('Error checking shared status:', error);
     throw error;
   }
 }
@@ -133,9 +109,8 @@ export async function saveFileShareRecordInDb({
         iv,
       },
     });
-    console.log('RECORD: ', record);
   } catch (error) {
-    console.error(error);
+    throw error;
   }
 }
 
@@ -151,8 +126,7 @@ export async function fetchFileDetailFromShareId(shareId: string) {
 export async function DeleteFileRecord(id: string) {
   try {
     const response = await prisma.files.delete({ where: { id } });
-
-    console.log('RESPONSE: ', response);
+    return response;
   } catch (error) {
     throw new Error(`FILE RECORD NOT DELETED: ${(error as Error).message}`);
   }
@@ -163,13 +137,7 @@ export async function SharedFilesRecord(googleID: string) {
   try {
     const records = await prisma.fileShare.findMany({
       where: { userId: googleID },
-      select: {
-        shareId: true,
-        createdAt: true,
-        expireAt: true,
-        fileSize: true,
-        originalName: true,
-      },
+     
     });
     return records;
   } catch (error) {

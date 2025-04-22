@@ -9,7 +9,7 @@ import { AnimatePresence, motion, useAnimate } from 'framer-motion';
 import { Lock, Upload } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useState } from 'react';
-import Dropzone, { FileWithPath } from 'react-dropzone';
+import Dropzone, { FileRejection, FileWithPath } from 'react-dropzone';
 import { toast } from 'sonner';
 import { FileCard } from './file-card';
 import { Button } from './ui/button';
@@ -107,7 +107,7 @@ export function UploadMainPage() {
         },
       );
     } catch (error) {
-      console.error('Animation failed:', error);
+      toast.error(`Animation Failed: ${(error as Error).message}`);
     }
   }, [animate, scope, theme]);
 
@@ -125,7 +125,7 @@ export function UploadMainPage() {
         },
       );
     } catch (error) {
-      console.error('Animation failed:', error);
+      toast.error(`Animation Failed: ${(error as Error).message}`);
     }
   }, [animate, scope, theme]);
 
@@ -135,6 +135,20 @@ export function UploadMainPage() {
     },
     [setContextFiles],
   );
+  const onDropRejected = useCallback((fileRejections: FileRejection[]) => {
+    for (const rejection of fileRejections) {
+      const { file, errors } = rejection;
+      for (const error of errors) {
+        if (error.code === 'file-too-large') {
+          toast.error(`"${file.name}" exceeds the 100MB limit.`);
+        }
+        if (error.code === 'too-many-files') {
+          toast.error(`You can only upload up to 5 files at a time.`);
+        }
+      }
+    }
+  }, []);
+
   // TODO: THIS IS THE TEMPORARY ENCRYPTION FUNCTION, WILL BE REFACTORED LATER
   const handleFilesEncryption = async () => {
     if (!publicKey) {
@@ -151,7 +165,6 @@ export function UploadMainPage() {
       toast.success('DONE', { id: enc_load });
     } catch (error) {
       toast.error('Failed to encrypt and upload files', { id: enc_load });
-      console.error('Encryption/upload error:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -166,6 +179,9 @@ export function UploadMainPage() {
       >
         <Dropzone
           onDropAccepted={onDropAccepted}
+          onDropRejected={onDropRejected}
+          maxFiles={5}
+          maxSize={104857600}
           multiple
           disabled={isProcessing}
         >

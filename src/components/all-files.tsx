@@ -155,7 +155,6 @@ export function AllFilesMain() {
     privateKey: CryptoKey;
     originalName: string;
   }) => {
-    console.log('S3 FILE: ', fileName);
     const presignedUrl = await generateGetObjectSignedURL(`upload/${fileName}`);
     const response = await fetch(presignedUrl);
     const encryptedArrayBuffer = await response.arrayBuffer();
@@ -196,17 +195,9 @@ export function AllFilesMain() {
     URL.revokeObjectURL(url);
   };
 
-  const handleShareFile = (fileId: string) => {
-    // Implement share functionality
-    console.log('Sharing file with ID:', fileId);
-    // You could generate a sharing link here
-  };
+  const handleShareFile = (fileId: string) => {};
 
   const handleDeleteFile = (fileId: string) => {
-    // Implement delete functionality
-    console.log('Deleting file with ID:', fileId);
-    // You would call your API to delete the file here
-    // Then update the local state
     setDecryptedFiles(decryptedFiles.filter((file) => file.id !== fileId));
   };
 
@@ -309,12 +300,7 @@ const FileCard: React.FC<FileCardProps> = ({
 
     const shareId = nanoidShort();
 
-    console.log('file data: ', file);
-    console.log('val: ', values);
-
     try {
-      // Call the FileShareManager with all required parameters
-
       await FileShareManager({
         googleID,
         fileId: file.id,
@@ -333,8 +319,7 @@ const FileCard: React.FC<FileCardProps> = ({
       const shareLink = `${window.location.origin}/share/${shareId}`;
       setShareLink(shareLink);
       toast.success('File shared successfully!');
-    } catch (error) {
-      console.error('Share error:', error);
+    } catch {
       toast.error('Failed to share file. Please try again.');
     } finally {
       setIsSharing(false);
@@ -346,21 +331,13 @@ const FileCard: React.FC<FileCardProps> = ({
 
     try {
       const key = `upload/${file.encryptedName}`;
-      console.log('DELTING: ', key);
-      const deletionResponse = await deleteObjectFromS3(key);
+      await deleteObjectFromS3(key);
 
-      const deleteRecord = await DeleteFileRecord(file.id);
-
-      console.log('REC DEL: ', deleteRecord);
-
-      console.log('RES DEL: ', deletionResponse);
-      // Simulate API call to delete file
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      await DeleteFileRecord(file.id);
 
       toast.success('File deleted successfully');
       setDeleteDialogOpen(false);
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch {
       toast.error('Failed to delete file');
     } finally {
       setIsDeleting(false);

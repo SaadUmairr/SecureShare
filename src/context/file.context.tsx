@@ -1,44 +1,4 @@
-// "use client";
-// import {
-//     createContext,
-//     Dispatch,
-//     SetStateAction,
-//     useContext,
-//     useState,
-// } from "react";
-// import { FileWithPath } from "react-dropzone";
-
-// export interface ExtendedFile extends FileWithPath {
-//     File: FileWithPath;
-//     retentionTime: Date;
-// }
-
-// interface FileContextProp {
-//     Files: ExtendedFile[];
-//     setFiles: Dispatch<SetStateAction<ExtendedFile[]>>;
-// }
-
-// const FilesContext = createContext<FileContextProp | null>(null);
-
-// export const FilesContextProvider = ({
-//     children,
-// }: Readonly<{
-//     children: React.ReactNode;
-// }>) => {
-//     const [Files, setFiles] = useState<ExtendedFile[]>([]);
-//     return <FilesContext value={{ Files, setFiles }}>{children}</FilesContext>;
-// };
-
-// export const useFilesContext = () => {
-//     const context = useContext(FilesContext);
-//     if (!context) {
-//         throw new Error(
-//             "useFilesContext must be used within a FilesContextProvider"
-//         );
-//     }
-//     return context;
-// };
-
+'use client';
 import {
   createContext,
   Dispatch,

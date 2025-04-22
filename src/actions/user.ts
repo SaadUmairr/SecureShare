@@ -18,9 +18,6 @@ export async function SaveUserKeysInDB({
   privateKey,
   iv,
 }: SaveUserKeysInDBProps) {
-  console.log('googleID: ', googleID);
-  console.log('passphrase: ', passphrase);
-
   try {
     const dbResponse = await prisma.userKeyPair.create({
       data: {
@@ -70,7 +67,6 @@ export async function getPassphraseStatus(googleID: string) {
 }
 
 export async function getUserKeyPair(googleID: string) {
-  console.log('GOOGLEID: ', googleID);
   try {
     const keyPair = await prisma.userKeyPair.findUnique({
       where: { googleID },
@@ -88,7 +84,6 @@ export async function updatePassphraseHash(hash: string, googleID: string) {
       data: { passphrase: hash },
     });
 
-    console.log('KEYPAIR: ', keypair);
     return keypair;
   } catch (error) {
     throw new Error(

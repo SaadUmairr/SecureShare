@@ -21,7 +21,7 @@ import {
   File,
   FileJson,
   FileSpreadsheet,
-  Image,
+  ImageIcon,
   Mail,
   Music,
   Presentation,
@@ -73,7 +73,7 @@ export const getFileTypeInfo = (file: File): FileTypeInfo => {
   // Image files
   if (mimeType.startsWith('image/')) {
     return {
-      icon: <Image className="h-5 w-5" />,
+      icon: <ImageIcon className="h-5 w-5" />,
       color: 'text-indigo-600',
       label: `Image File (${mimeType.split('/')[1].toUpperCase()})`,
     };
