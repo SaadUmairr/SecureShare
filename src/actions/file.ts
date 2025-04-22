@@ -22,7 +22,7 @@ export async function saveFileRecordInDb({
   expireAt,
 }: saveFileRecordInDbProp) {
   try {
-    const response = await prisma.files.create({
+    await prisma.files.create({
       data: {
         googleID,
         fileName,
@@ -97,7 +97,7 @@ export async function saveFileShareRecordInDb({
     throw new Error('REQUIRED FIELDS ARE MISSING');
 
   try {
-    const record = await prisma.fileShare.create({
+    await prisma.fileShare.create({
       data: {
         userId,
         shareId,
@@ -137,7 +137,6 @@ export async function SharedFilesRecord(googleID: string) {
   try {
     const records = await prisma.fileShare.findMany({
       where: { userId: googleID },
-     
     });
     return records;
   } catch (error) {

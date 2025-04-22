@@ -163,7 +163,7 @@ export function UploadMainPage() {
       toast.loading('UPLOADING', { id: enc_load });
       await filesUploader(encryptedFiles);
       toast.success('DONE', { id: enc_load });
-    } catch (error) {
+    } catch  {
       toast.error('Failed to encrypt and upload files', { id: enc_load });
     } finally {
       setIsProcessing(false);

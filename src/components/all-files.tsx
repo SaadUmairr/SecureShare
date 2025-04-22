@@ -195,7 +195,9 @@ export function AllFilesMain() {
     URL.revokeObjectURL(url);
   };
 
-  const handleShareFile = (fileId: string) => {};
+  const handleShareFile = (fileId: string) => {
+    fileId.charAt(0); // Dummy action
+  };
 
   const handleDeleteFile = (fileId: string) => {
     setDecryptedFiles(decryptedFiles.filter((file) => file.id !== fileId));
