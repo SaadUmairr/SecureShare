@@ -293,16 +293,18 @@ const FileCard: React.FC<FileCardProps> = ({
       toast.error('User not authenticated');
       return;
     }
-
+    const shareToast = toast.loading('Sharing...');
     setIsSharing(true);
-    const nanoidShort = customAlphabet(
-      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-      5,
-    );
-
-    const shareId = nanoidShort();
 
     try {
+      const nanoidShort = customAlphabet(
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~',
+
+        5,
+      );
+
+      const shareId = nanoidShort();
+
       await FileShareManager({
         googleID,
         fileId: file.id,
@@ -320,9 +322,9 @@ const FileCard: React.FC<FileCardProps> = ({
       // Generate share link
       const shareLink = `${window.location.origin}/share/${shareId}`;
       setShareLink(shareLink);
-      toast.success('File shared successfully!');
-    } catch {
-      toast.error('Failed to share file. Please try again.');
+      toast.success('File shared successfully!', { id: shareToast });
+    } catch (error) {
+      toast.error((error as Error).message, { id: shareToast });
     } finally {
       setIsSharing(false);
     }

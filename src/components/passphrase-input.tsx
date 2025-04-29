@@ -1,5 +1,5 @@
 'use client';
-import { getUserKeyPair } from '@/actions/user';
+import { getUserKeyPair, setPassphraseStatus } from '@/actions/user';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUser } from '@/context/user.context';
 import { cn } from '@/lib/utils';
-import { savePassphrase } from '@/utils/idb.util';
+import { savePassphraseLocally } from '@/utils/idb.util';
 import { PassphrasePepper } from '@/utils/passphrase.util';
 import bcrypt from 'bcryptjs';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -100,7 +100,8 @@ export const PassphraseInput = () => {
   const handleSubmit = async () => {
     if (mode === 'setup') {
       setPassphrase(passphraseState);
-      savePassphrase(passphraseState);
+      savePassphraseLocally(passphraseState);
+      setPassphraseStatus(googleID);
       toast.success('Passphrase set successfully!');
       router.replace('/auth/upload');
     } else if (mode === 'enter') {
@@ -115,7 +116,7 @@ export const PassphraseInput = () => {
         googleID,
       );
       setPassphrase(passphraseState);
-      savePassphrase(passphraseState);
+      savePassphraseLocally(passphraseState);
       const isPassphraseCorrect = await bcrypt.compare(
         passphraseWithPepper,
         keypair?.passphrase,
@@ -194,7 +195,7 @@ export const PassphraseInput = () => {
                   >
                     <Lock className="text-primary h-5 w-5 flex-shrink-0" />
                     <span>
-                      Is processed locally on your device and{' '}
+                      Is processed locally on your device and
                       <b>never leaves</b> your device
                     </span>
                   </motion.li>
@@ -228,7 +229,7 @@ export const PassphraseInput = () => {
                   <Button
                     size="lg"
                     onClick={handleEducationUnderstand}
-                    className="w-full"
+                    className="w-full text-white"
                   >
                     I Understand
                   </Button>
@@ -400,7 +401,7 @@ export const PassphraseInput = () => {
               <DialogClose asChild>
                 <Button
                   type="button"
-                  className="w-full"
+                  className="w-full text-white"
                   disabled={!isFormValid}
                   onClick={handleSubmit}
                 >

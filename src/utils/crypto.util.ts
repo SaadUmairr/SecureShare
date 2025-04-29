@@ -32,15 +32,17 @@ export interface FileDownloadManagerProp {
   fileIV: string;
   privateKey: CryptoKey;
   originalName: string;
-  fileId: string;
 }
 
 export interface FileShareManagerProp extends FileDownloadManagerProp {
+  fileId: string;
   userId?: string;
   shareId: string;
   passphrase: string;
   googleID: string;
   fileSize: bigint;
+  maxDownloads?: number;
+  downloadCount?: number;
   expireAt: Date;
 }
 /**
@@ -162,6 +164,45 @@ export async function EncryptArrayBuffer(
     String.fromCharCode(...new Uint8Array(encryptedFileName)),
   );
   return { encryptedData, iv, encryptedName };
+}
+export async function decryptFileName(
+  encryptedNameBase64: string,
+  passphrase: string,
+  ivBase64: string,
+): Promise<string> {
+  console.log('DECRYPTING FILE NAME..', encryptedNameBase64);
+  console.log('PASSPHRASE: ', passphrase);
+
+  const encryptedNameBytes = Uint8Array.from(
+    atob(fromUrlSafeBase64(encryptedNameBase64)),
+    (c) => c.charCodeAt(0),
+  );
+
+  const iv = Uint8Array.from(atob(fromUrlSafeBase64(ivBase64)), (c) =>
+    c.charCodeAt(0),
+  );
+
+  try {
+    const derivedKey = await deriveEncryptionKeyFromPassphrase(passphrase);
+
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv,
+      },
+      derivedKey,
+      encryptedNameBytes,
+    );
+
+    const decodedName = new TextDecoder().decode(decryptedBuffer);
+    console.log('DECRYPTED FILE NAME: ', decodedName);
+    return decodedName;
+  } catch (error) {
+    console.error('Decryption error:', (error as Error).message);
+    throw new Error(
+      'Failed to decrypt file name. Possibly incorrect passphrase.',
+    );
+  }
 }
 
 function toUrlSafeBase64(base64: string): string {
@@ -363,9 +404,10 @@ export async function FileDownloadManager({
   fileIV,
   privateKey,
   originalName,
-}: FileDownloadManagerProp) {
+  returnBlob = false, // <-- NEW OPTIONAL PARAMETER
+}: FileDownloadManagerProp & { returnBlob?: boolean }) {
   try {
-    const encryptedFileArrayBufer = await fetchEncryptedFile(
+    const encryptedFileArrayBuffer = await fetchEncryptedFile(
       `upload/${fileName}`,
     );
 
@@ -375,12 +417,16 @@ export async function FileDownloadManager({
     );
 
     const decryptedFile = await decryptFile(
-      encryptedFileArrayBufer,
+      encryptedFileArrayBuffer,
       decryptedSymmetricKey,
       fileIV,
     );
 
-    await triggerDownload(decryptedFile, originalName);
+    if (returnBlob) {
+      return new Blob([decryptedFile]);
+    } else {
+      await triggerDownload(decryptedFile, originalName);
+    }
   } catch (err) {
     throw new Error((err as Error).message);
   }
@@ -403,6 +449,8 @@ export async function FileShareManager({
   }
 
   if (!passphrase) throw new Error('Passphrase is missing');
+
+  console.log('PASSPHRASE: CRYPTO:: ', passphrase);
 
   try {
     const alreadySharedCheck = await CheckSharedFileStatus(fileName);
@@ -439,10 +487,9 @@ export async function FileShareManager({
       userId: googleID,
       shareId,
       sharedFileName: encryptedFileName,
+      fileId,
       originalFileId: fileId,
-      originalName: originalName,
       passphraseHash,
-      encryptedSymmetricKey,
       fileSize,
       iv: shareFileIVBase64,
       expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),

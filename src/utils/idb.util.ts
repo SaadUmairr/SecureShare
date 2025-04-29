@@ -82,11 +82,62 @@ export async function clearLocalDB(store: string) {
 }
 
 // Save the passphrase into the "passphrase" store, with a fixed key (e.g., 'passphrase')
-export async function savePassphrase(pass: string): Promise<void> {
+export async function savePassphraseLocally(pass: string): Promise<void> {
   await saveDataLocally('passphrase', 'passphrase', pass);
 }
 
 // Load the passphrase from the "passphrase" store
 export async function loadPassphrase(): Promise<string | null> {
   return await loadLocalData('passphrase', 'passphrase');
+}
+
+const UPLOAD_LIMIT_KEY = 'upload-rate-limit';
+
+export interface UploadRateLimit {
+  count: number;
+  size: number;
+  date: string;
+}
+export async function getUploadRateLimitLocal(): Promise<UploadRateLimit | null> {
+  const raw = await loadLocalData('identifier', UPLOAD_LIMIT_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as UploadRateLimit;
+    const today = new Date().toISOString().slice(0, 10);
+    if (parsed.date !== today) {
+      return null; // Outdated, ignore
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+export async function setUploadRateLimitLocal(
+  limit: Omit<UploadRateLimit, 'date'>,
+): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const data: UploadRateLimit = { ...limit, date: today };
+  await saveDataLocally('identifier', UPLOAD_LIMIT_KEY, JSON.stringify(data));
+}
+
+const SHARE_LIMIT_KEY = 'share-limit';
+
+export async function getShareRateLimitLocal(): Promise<{
+  count: number;
+} | null> {
+  const data = await loadLocalData('identifier', SHARE_LIMIT_KEY);
+  if (!data) return null;
+
+  try {
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function setShareRateLimitLocal(limit: {
+  count: number;
+}): Promise<void> {
+  await saveDataLocally('identifier', SHARE_LIMIT_KEY, JSON.stringify(limit));
 }

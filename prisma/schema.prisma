@@ -8,14 +8,16 @@ datasource db {
 }
 
 model User {
-  googleID        String       @id
+  googleID        String  @id
   username        String
   avatar          String
-  email           String       @unique
-  isPassphraseSet Boolean      @default(false)
-  keyPair         UserKeyPair?
-  files           Files[]
-  FileShare       FileShare[]
+  email           String  @unique
+  isPassphraseSet Boolean @default(false)
+
+  userKeyPair   UserKeyPair?
+  files         File[]
+  uploadRecords UploadRecord[]
+  FileShare     FileShare[]
 }
 
 model UserKeyPair {
@@ -24,10 +26,11 @@ model UserKeyPair {
   publicKey  String
   privateKey String
   iv         String
-  user       User   @relation(fields: [googleID], references: [googleID])
+
+  user User @relation(fields: [googleID], references: [googleID], onDelete: Cascade)
 }
 
-model Files {
+model File {
   id           String   @id @default(uuid())
   googleID     String
   fileName     String
@@ -35,31 +38,58 @@ model Files {
   symmetricKey String
   fileIV       String
   fileSize     BigInt   @default(0) @db.BigInt
-  expireAt     DateTime @default(dbgenerated("(now() + interval '24 hours')"))
+  expireAt     DateTime @default(dbgenerated("(now() + interval '72 hours')"))
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user      User        @relation(fields: [googleID], references: [googleID], onDelete: Cascade)
-  FileShare FileShare[]
+  user       User        @relation(fields: [googleID], references: [googleID], onDelete: Cascade)
+  shareFiles FileShare[]
 }
 
+// model ShareGroup {
+//   id             String    @id @default(cuid())
+//   shareId        String    @unique
+//   userId         String?
+//   ipAddress      String?   @db.VarChar(45)
+//   passphraseHash String
+//   maxDownloads   Int?      @default(3)
+//   downloadCount  Int       @default(0)
+//   createdAt      DateTime  @default(now())
+//   expireAt       DateTime? @default(dbgenerated("(now() + interval '24 hours')"))
+
+//   user  User?       @relation(fields: [userId], references: [googleID], onDelete: Cascade)
+//   files ShareFile[]
+
+//   @@index([ipAddress, createdAt])
+// }
+
 model FileShare {
-  id                    String   @id @default(cuid()) // Internal ID
-  shareId               String   @unique // Public ID used in the URL
-  sharedFileName        String // New S3 file path for the shared file (/upload/share/...)
-  originalFileId        String // Reference to the original file
-  originalFile          Files    @relation(fields: [originalFileId], references: [id])
-  passphraseHash        String // bcrypt hash of the passphrase
-  encryptedSymmetricKey String // Encrypted with derived passphrase key
-  fileSize              BigInt   @default(0) @db.BigInt
-  iv                    String // IV used during AES encryption
-  originalName          String // User-friendly original filename (e.g. resume.pdf)
-  createdAt             DateTime @default(now())
-  expireAt              DateTime @default(dbgenerated("(now() + interval '24 hours')")) // Optional expiry
-  userId                String? // User who shared it (optional)
-  user                  User?    @relation(fields: [userId], references: [googleID])
+  id             String   @id @default(cuid())
+  shareId        String   @unique
+  sharedFileName String
+  originalFileId String?
+  originalFile   File?    @relation(fields: [originalFileId], references: [id])
+  passphraseHash String
+  fileSize       BigInt   @default(0) @db.BigInt
+  iv             String
+  maxDownloads   Int      @default(3)
+  downloadCount  Int      @default(0)
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+  expireAt       DateTime @default(dbgenerated("(now() + interval '24 hours')")) // Optional expiry
+  userId         String? // User who shared it (optional)
+  user           User?    @relation(fields: [userId], references: [googleID])
+
   // @@unique([originalFileId, passphraseHash]) // Prevent duplicate share of files based on passphrase
 
   // @@unique([originalFileId]) // Prevent duplicate shares of the same file
   @@unique([originalFileId, userId]) // Prevent duplicate of file per user
+}
+
+model UploadRecord {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  fileSize  BigInt   @db.BigInt
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [googleID], onDelete: Cascade)
 }

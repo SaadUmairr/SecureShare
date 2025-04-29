@@ -1,174 +1,204 @@
-import { Footer, Navbar } from './homepage';
+import Link from 'next/link';
+import { Footer } from './footer';
+import { Navbar } from './navbar';
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
       {/* Header */}
-      <div className="bg-slate-800 py-12 text-white">
+      <div className="bg-slate-800 py-12 text-white dark:bg-slate-700">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-3xl font-bold">Terms of Service</h1>
-          <p className="mt-2 text-slate-300">Last updated: April 21, 2025</p>
+          <p className="mt-2 text-slate-300 dark:text-slate-200">
+            Last updated: April 23, 2025
+          </p>
         </div>
       </div>
 
       {/* Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow-sm">
-          <div className="prose max-w-none">
-            <h2 className="mt-0 text-2xl font-bold">1. Introduction</h2>
-            <p>
-              Welcome to SecureShare. By accessing or using our website, mobile
-              applications, or services (collectively, the
-              &quot;Services&quot;), you agree to be bound by these Terms of
-              Service (&quot;Terms&quot;). Please read them carefully.
-            </p>
-            <p>
-              If you do not agree to these Terms, you may not access or use the
-              Services. These Terms constitute a legally binding agreement
-              between you and SecureShare (&quot;we,&quot; &quot;us,&quot; or
-              &quot;our&quot;).
+        <div className="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow-sm dark:bg-slate-800 dark:text-white">
+          <div className="prose dark:prose-invert max-w-none">
+            <h2 className="mt-0 text-2xl font-bold text-slate-900 dark:text-white">
+              1. Hey, Welcome 👋
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              Thanks for checking out SecureShare! Before you dive in, we just
+              need to go over a few important things. These Terms of Service
+              (&quot;Terms&quot;) lay out how our service works and what&apos;s
+              cool (and not cool) when using it. By using SecureShare, you agree
+              to these Terms — so give it a quick read.
             </p>
 
-            <h2 className="mt-8 text-2xl font-bold">2. Using Our Services</h2>
-            <p>
-              <strong>a. Eligibility.</strong> You must be at least 16 years old
-              to use our Services. By using our Services, you represent that you
-              meet this requirement.
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              2. Who Can Use SecureShare
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">
+                a. Age Check.
+              </strong>
+              You need to be 16 or older to use SecureShare. If you&apos;re
+              under that, unfortunately, this isn&apos;t the right place for
+              you.
             </p>
-            <p>
-              <strong>b. Account Creation.</strong> To use certain features, you
-              may need to create an account. You are responsible for maintaining
-              the confidentiality of your account credentials and for all
-              activities under your account.
+            <p className="text-slate-700 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">
+                b. Your Account.
+              </strong>
+              Some features need an account (like uploading files). You&apos;re
+              in charge of your account info, including keeping your password
+              safe.
             </p>
-            <p>
-              <strong>c. Encryption Keys and Data.</strong> You are solely
-              responsible for managing and safeguarding your encryption keys and
-              passphrases. Due to our zero-knowledge architecture, if you lose
-              your encryption keys or passphrases, we cannot recover your data.
+            <p className="text-slate-700 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">
+                c. Your Keys, Your Data.
+              </strong>
+              We don&apos;t store or have access to your passphrases. That
+              means: if you lose it, we can&apos;t help you get your files back.
             </p>
 
-            <div className="my-6 border-l-4 border-yellow-600 bg-yellow-50 p-4">
-              <h3 className="mt-0 text-lg font-bold">Important Notice</h3>
-              <p className="mb-0">
-                We cannot access, decrypt, or recover your files if you lose
-                your encryption keys or passphrases. It is critical that you
-                safely store this information.
+            <div className="my-6 border-l-4 border-yellow-600 bg-yellow-50 p-4 dark:border-yellow-500 dark:bg-slate-700">
+              <h3 className="mt-0 text-lg font-bold text-slate-900 dark:text-white">
+                Important Note
+              </h3>
+              <p className="mb-0 text-slate-700 dark:text-slate-300">
+                Please save your passphrase somewhere safe. We have zero access
+                to it — and we like it that way.
               </p>
             </div>
 
-            <h2 className="mt-8 text-2xl font-bold">3. Acceptable Use</h2>
-            <p>When using our Services, you agree not to:</p>
-            <ul className="list-disc pl-5">
-              <li>Violate any applicable laws or regulations</li>
-              <li>Infringe on the intellectual property rights of others</li>
-              <li>Share malicious software or content</li>
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              3. What Not to Do
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              SecureShare is built for privacy and security — please don&apos;t
+              misuse it. You agree not to:
+            </p>
+            <ul className="list-disc pl-5 text-slate-700 dark:text-slate-300">
+              <li>Break the law while using our service</li>
+              <li>Share stuff that doesn&apos;t belong to you</li>
+              <li>Upload viruses, malware, or anything shady</li>
               <li>
-                Attempt to gain unauthorized access to our systems or other
-                users&apos; accounts
+                Hack or try to gain unauthorized access to anyone&apos;s files
               </li>
-              <li>Use our Services to store or share illegal content</li>
+              <li>Use SecureShare to store or distribute illegal content</li>
+              <li>Mess with the site or other users</li>
+            </ul>
+
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              4. Your Privacy + Security
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              We take privacy seriously. Check out our Privacy Policy to see how
+              we handle your data. Spoiler: we keep it minimal.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300">
+              That said, no system is 100% bulletproof. By using SecureShare,
+              you acknowledge the risks of putting any data online.
+            </p>
+
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              5. Ownership Stuff
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">
+                a. Our Stuff.
+              </strong>
+              &nbsp; We built SecureShare, and all the design/code/features
+              belong to us. You can&apos;t use our branding, copy our product,
+              or build a clone.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">
+                b. Open Source Bits.
+              </strong>
+              &nbsp; We love open source and use some great tools that are
+              licensed under Apache 2.0. That means you&apos;re free to use,
+              modify, and share those parts — just keep the license notices and
+              don&apos;t use our name or branding.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300">
+              <strong className="text-slate-900 dark:text-white">
+                c. Your Stuff.
+              </strong>
+              &nbsp; Any files or content you upload? They&apos;re 100% yours.
+              We don&apos;t see them, own them, or touch them.
+            </p>
+
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              6. Shutting It Down
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              We reserve the right to suspend or terminate accounts that violate
+              these Terms or abuse the service. You can delete your account
+              anytime, too.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300">
+              Some parts of these Terms (like how we handle your content or
+              limit liability) still apply after you leave.
+            </p>
+
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              7. Liability — The Not-So-Fun Part
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              We do our best to keep things smooth, but if something goes wrong,
+              we can&apos;t be held responsible for:
+            </p>
+            <ul className="list-disc pl-5 text-slate-700 dark:text-slate-300">
+              <li>Lost profits</li>
+              <li>Data loss (especially if you lose your keys)</li>
               <li>
-                Engage in any activity that interferes with or disrupts our
-                Services
+                Anything beyond the fees you paid us (if any) in the last 12
+                months
               </li>
             </ul>
 
-            <h2 className="mt-8 text-2xl font-bold">4. Privacy and Security</h2>
-            <p>
-              Our Privacy Policy explains how we handle your information. By
-              using our Services, you agree to our collection, use, and sharing
-              of information as described in our Privacy Policy.
-            </p>
-            <p>
-              While we implement industry-standard security measures, no system
-              is completely secure. You acknowledge that you provide your data
-              at your own risk.
-            </p>
-
-            <h2 className="mt-8 text-2xl font-bold">
-              5. Intellectual Property
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              8. No Fancy Promises
             </h2>
-            <p>
-              <strong>a. Our Content.</strong> The software, graphics, design,
-              and other elements of our Services are protected by intellectual
-              property rights. You may not copy, modify, or create derivative
-              works based on our Services.
-            </p>
-            <p>
-              <strong>b. Open Source.</strong> Some components of our Services
-              are offered under open source licenses. Nothing in these Terms
-              prevents you from using such components in accordance with their
-              respective licenses.
-            </p>
-            <p>
-              <strong>c. Your Content.</strong> You retain all rights to the
-              content you upload, store, or share through our Services.
+            <p className="text-slate-700 dark:text-slate-300">
+              SecureShare is provided &quot;as is.&quot; That means we
+              don&apos;t offer guarantees or warranties — implied or otherwise —
+              around things like performance, availability, or fit for your
+              particular use case.
             </p>
 
-            <h2 className="mt-8 text-2xl font-bold">6. Termination</h2>
-            <p>
-              We may suspend or terminate your access to our Services at any
-              time for violations of these Terms or for any other reason at our
-              discretion. You may terminate your account at any time.
-            </p>
-            <p>
-              Upon termination, your right to use the Services will cease
-              immediately. Any provisions of these Terms that by their nature
-              should survive termination shall survive termination.
-            </p>
-
-            <h2 className="mt-8 text-2xl font-bold">
-              7. Limitation of Liability
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              9. If We Update These Terms
             </h2>
-            <p>
-              To the maximum extent permitted by law, we shall not be liable for
-              any indirect, incidental, special, consequential, or punitive
-              damages, including lost profits, arising out of or relating to
-              your use of or inability to use our Services.
-            </p>
-            <p>
-              Our total liability for any claims relating to these Terms or our
-              Services shall not exceed the amount you paid us, if any, for the
-              use of our Services during the twelve (12) months preceding the
-              claim.
+            <p className="text-slate-700 dark:text-slate-300">
+              Sometimes we&apos;ll update these Terms. If it&apos;s a major
+              change, we&apos;ll give you a heads-up via the site or email. Keep
+              using SecureShare after that? It means you&apos;re okay with the
+              new version.
             </p>
 
-            <h2 className="mt-8 text-2xl font-bold">
-              8. Disclaimer of Warranties
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              10. Legal Details
             </h2>
-            <p>
-              Our Services are provided &quot;as is&quot; and &quot;as
-              available&quot; without warranties of any kind, either express or
-              implied, including, but not limited to, implied warranties of
-              merchantability, fitness for a particular purpose, or
-              non-infringement.
+            <p className="text-slate-700 dark:text-slate-300">
+              These Terms are governed by the laws of India. Any disputes or
+              legal issues arising out of these Terms or your use of our
+              Services shall be subject to the exclusive jurisdiction of the
+              courts located in Delhi, India.
             </p>
 
-            <h2 className="mt-8 text-2xl font-bold">9. Changes to Terms</h2>
-            <p>
-              We may modify these Terms at any time. We will provide notice of
-              material changes by posting the updated Terms on our website or
-              via email. Your continued use of our Services after such changes
-              constitutes your acceptance of the new Terms.
-            </p>
-
-            <h2 className="mt-8 text-2xl font-bold">10. Governing Law</h2>
-            <p>
-              These Terms are governed by the laws of the state of California,
-              without regard to its conflict of law principles. Any disputes
-              arising from these Terms or our Services shall be resolved
-              exclusively in the courts of San Francisco County, California.
-            </p>
-
-            <h2 className="mt-8 text-2xl font-bold">11. Contact Information</h2>
-            <p>
-              For questions about these Terms, please contact us at:
+            <h2 className="mt-8 text-2xl font-bold text-slate-900 dark:text-white">
+              11. Need Help?
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300">
+              If you&apos;ve got any questions about this document or anything
+              else legal-ish:
               <br />
-              Email: legal@secureshare.example.com
-              <br />
-              Address: 123 Privacy Ave, Suite 456, Securityville, CA 94321
+              Email:
+              <Link
+                href="mailto:legal@secureshare.example.com"
+                className="text-blue-600 dark:text-blue-400"
+              >
+                legal@secureshare.example.com
+              </Link>
             </p>
           </div>
         </div>

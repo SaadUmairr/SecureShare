@@ -1,5 +1,6 @@
 'use client';
 
+import { IncrementShareDownloadCount } from '@/actions/file';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import {
   decryptFile,
+  decryptFileName,
   fetchEncryptedFile,
   triggerDownload,
 } from '@/utils/crypto.util';
@@ -45,27 +48,32 @@ import {
   Timer,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { formatFileSize } from './file-card';
 
 interface ShareFileProp {
   shareId: string;
   sharedFileName: string;
-  originalFileId: string;
+  originalFileId?: string;
   passphraseHash: string;
   fileSize: bigint;
   iv: string; // this should be the IV from the re-encryption (base64-encoded)
   originalName: string;
+  downloadCount: number;
+  maxDownloads: number;
   expireAt: Date;
 }
 
 export function ShareFile({
-  // shareId,
+  shareId,
   passphraseHash,
   originalName,
   sharedFileName,
   fileSize,
   expireAt,
   // originalFileId,
+  downloadCount,
+  maxDownloads,
   iv, // base64 string
 }: ShareFileProp) {
   const [passphrase, setPassphrase] = useState<string>('');
@@ -78,7 +86,13 @@ export function ShareFile({
   const [remainingTime, setRemainingTime] = useState<string>('');
   const [progressValue, setProgressValue] = useState<number>(0);
   const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [decryptedFileName, setDecryptedFileName] = useState<string | null>(
+    null,
+  );
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+  const [downloadLimit, setDownloadLimit] = useState<number>(
+    maxDownloads - downloadCount,
+  );
   const [, forceRerender] = useState(0);
 
   useEffect(() => {
@@ -88,6 +102,30 @@ export function ShareFile({
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!isPassphraseCorrect || !passphrase || !originalName || !iv) return;
+
+    const originalNameDecryptor = async () => {
+      try {
+        const name = await decryptFileName(originalName, passphrase, iv);
+        console.log('NAME: ', name);
+        setDecryptedFileName(name);
+      } catch (error) {
+        console.error('Failed to decrypt file name:', error);
+      }
+    };
+
+    originalNameDecryptor();
+  }, [isPassphraseCorrect, passphrase, originalName, iv]);
+
+  console.log({
+    isPassphraseCorrect,
+    passphrase,
+    originalName,
+    iv,
+  });
+
   // Check if file is expired and calculate remaining time
   useEffect(() => {
     const expireDate = new Date(expireAt);
@@ -160,8 +198,18 @@ export function ShareFile({
   const handleFileDownload = async () => {
     if (isExpired) return;
 
+    const downloadToast = toast.loading('Downloading...');
     setDownloading(true);
     setError(null);
+
+    console.log(
+      'SHARED FILENAME: ',
+      sharedFileName,
+      'Passphrase: ',
+      passphrase,
+      'IV: ',
+      iv,
+    );
 
     try {
       const encryptedFileArrayBuffer = await fetchEncryptedFile(
@@ -176,29 +224,37 @@ export function ShareFile({
         iv,
       );
 
-      triggerDownload(decryptedFile, originalName);
-      setDownloadSuccess(true);
+      if (!decryptedFile || !decryptedFileName)
+        throw new Error('DETAILS ARE MISSING');
 
-      // Reset success message after 3 seconds
+      // Increment download counter before giving the file
+      await IncrementShareDownloadCount(shareId);
+
+      triggerDownload(decryptedFile, decryptedFileName);
+      setDownloadSuccess(true);
+      setDownloadLimit((prev) => prev - 1);
+
+      toast.success('Downloaded', { id: downloadToast });
       setTimeout(() => {
         setDownloadSuccess(false);
       }, 3000);
-    } catch {
+    } catch (error) {
+      toast.error(`FAILED: ${(error as Error).message}`, { id: downloadToast });
       setError('Failed to decrypt the file. Please try again.');
     } finally {
       setDownloading(false);
     }
   };
 
-  // Get file extension
   const getFileExtension = (filename: string) => {
     return filename.split('.').pop()?.toUpperCase() || '';
   };
 
   const getFileIcon = () => {
-    const extension = getFileExtension(originalName).toLowerCase();
+    const extension = decryptedFileName
+      ? getFileExtension(decryptedFileName).toLowerCase()
+      : '';
 
-    // You could expand this with more file type icons based on extension
     switch (extension) {
       case 'pdf':
         return <FileIcon className="h-12 w-12 text-red-500" />;
@@ -246,8 +302,8 @@ export function ShareFile({
                   <Timer className="h-8 w-8 text-red-500" />
                 </div>
                 <p className="text-muted-foreground text-center">
-                  The file &quot;{originalName}&quot; has expired and can no
-                  longer be accessed.
+                  The file &quot;{decryptedFileName}&quot; has expired and can
+                  no longer be accessed.
                 </p>
               </CardContent>
               <CardFooter className="flex justify-center pb-6">
@@ -260,6 +316,47 @@ export function ShareFile({
               </CardFooter>
             </Card>
           </motion.div>
+        ) : downloadLimit === 0 ? (
+          // Download Limit Card
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-md"
+            >
+              <Card className="border-amber-200 shadow-lg">
+                <CardHeader className="pb-2 text-center">
+                  <CardTitle className="flex items-center justify-center gap-2 text-amber-500">
+                    <AlertCircle className="h-6 w-6" />
+                    Download Limit Reached
+                  </CardTitle>
+                  <CardDescription>
+                    This shared file has reached its maximum download limit
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center pt-4 pb-6">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                    <Download className="h-8 w-8 text-amber-500" />
+                  </div>
+                  <p className="text-muted-foreground text-center">
+                    The file &quot;{decryptedFileName}&quot; has reached its
+                    maximum download limit of {maxDownloads} and can no longer
+                    be accessed.
+                  </p>
+                </CardContent>
+                <CardFooter className="flex justify-center pb-6">
+                  <Badge
+                    variant="outline"
+                    className="border-amber-200 text-amber-500"
+                  >
+                    Maximum Downloads: {maxDownloads}/{maxDownloads}
+                  </Badge>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          </>
         ) : !isPassphraseCorrect ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -380,11 +477,17 @@ export function ShareFile({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Badge variant="secondary">
-                          {getFileExtension(originalName)}
+                          {decryptedFileName &&
+                            getFileExtension(decryptedFileName)}
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>File Type: {getFileExtension(originalName)}</p>
+                        <p>
+                          File Type:{' '}
+                          {decryptedFileName
+                            ? getFileExtension(decryptedFileName)
+                            : 'Unknown'}
+                        </p>{' '}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -395,10 +498,12 @@ export function ShareFile({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="block truncate">{originalName}</span>
+                          <span className="block truncate">
+                            {decryptedFileName}
+                          </span>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{originalName}</p>
+                          <p>{decryptedFileName}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -411,6 +516,21 @@ export function ShareFile({
                   <span className="text-muted-foreground">Size</span>
                   <span className="font-medium">
                     {formatFileSize(Number(fileSize))}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Downloads Left</span>
+                  <span
+                    className={cn(
+                      'font-medium',
+                      downloadLimit / maxDownloads <= 0.2
+                        ? 'text-red-500'
+                        : downloadLimit / maxDownloads <= 0.5
+                          ? 'text-amber-500'
+                          : 'text-green-500',
+                    )}
+                  >
+                    {downloadLimit}
                   </span>
                 </div>
 

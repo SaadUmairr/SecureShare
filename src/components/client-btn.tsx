@@ -1,9 +1,10 @@
-// components/client-google-button.tsx
-
 'use client';
 
 import { GoogleLoginHandler } from '@/actions/user';
 import { Button } from '@/components/ui/button';
+import { UserIcon } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function GoogleClientButton() {
   const handleLogin = async () => {
@@ -28,6 +29,31 @@ export function GoogleClientButton() {
         />
       </svg>
       Continue with Google
+    </Button>
+  );
+}
+
+export function GuestClientButton() {
+  const [loading, setLoading] = useState(false);
+
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    toast('🤌 COMING SOON...');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    setLoading(false);
+  };
+
+  return (
+    <Button
+      variant="outline"
+      type="button"
+      className="w-full gap-x-4"
+      onClick={handleGuestLogin}
+      disabled={loading}
+    >
+      <UserIcon absoluteStrokeWidth />
+      {loading ? 'Just a moment...' : 'Try as guest'}
     </Button>
   );
 }

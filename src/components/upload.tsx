@@ -1,9 +1,14 @@
 'use client';
 
+import { checkUploadRateLimit } from '@/actions/file';
 import { useFilesContext } from '@/context/file.context';
 import { useKeyPair } from '@/context/keypair.context';
 import { useUser } from '@/context/user.context';
 import { Encryptor } from '@/utils/crypto.util';
+import {
+  getUploadRateLimitLocal,
+  setUploadRateLimitLocal,
+} from '@/utils/idb.util';
 import { filesUploader } from '@/utils/s3.util';
 import { AnimatePresence, motion, useAnimate } from 'framer-motion';
 import { Lock, Upload } from 'lucide-react';
@@ -14,6 +19,9 @@ import { toast } from 'sonner';
 import { FileCard } from './file-card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+
+const MAX_FILES_PER_DAY = 5;
+const MAX_UPLOAD_SIZE_PER_DAY = 100 * 1024 * 1024; // 100 MB
 
 export function UploadMainPage() {
   const { theme } = useTheme();
@@ -149,22 +157,76 @@ export function UploadMainPage() {
     }
   }, []);
 
-  // TODO: THIS IS THE TEMPORARY ENCRYPTION FUNCTION, WILL BE REFACTORED LATER
+  let localCount: number, localSize: number;
   const handleFilesEncryption = async () => {
     if (!publicKey) {
       toast.error('Public key is not present');
       return;
     }
 
+    if (!googleID) {
+      toast.error('You must be logged in to upload');
+      return;
+    }
+
     setIsProcessing(true);
-    const enc_load = toast.loading('ENCRYPTING');
+    const uploadingToast = toast.loading('ENCRYPTING...');
+
     try {
+      const fileCount = contextFiles.length;
+      const totalSize = contextFiles.reduce((acc, file) => acc + file.size, 0);
+
+      const localLimit = await getUploadRateLimitLocal();
+      localCount = localLimit?.count ?? 0;
+      localSize = localLimit?.size ?? 0;
+
+      if (localLimit) {
+        if (localCount + fileCount > MAX_FILES_PER_DAY) {
+          toast.error('File upload limit of 5 files/day exceeded.');
+          toast.dismiss(uploadingToast);
+          return;
+        }
+        if (localSize + totalSize > MAX_UPLOAD_SIZE_PER_DAY) {
+          toast.error('Upload limit of 100MB/day exceeded. ');
+          toast.dismiss(uploadingToast);
+          return;
+        }
+      } else {
+        // Make DB call to check and sync
+        const stats = await checkUploadRateLimit({
+          userId: googleID,
+          fileSize: totalSize,
+        });
+
+        localCount = stats.count;
+        localSize = stats.size;
+        await setUploadRateLimitLocal({ count: localCount, size: localSize });
+      }
+
       const encryptedFiles = await Encryptor(contextFiles, publicKey, googleID);
-      toast.loading('UPLOADING', { id: enc_load });
+      toast.loading('UPLOADING...', { id: uploadingToast });
+
       await filesUploader(encryptedFiles);
-      toast.success('DONE', { id: enc_load });
-    } catch  {
-      toast.error('Failed to encrypt and upload files', { id: enc_load });
+
+      await setUploadRateLimitLocal({
+        count: localCount + fileCount,
+        size: localSize + totalSize,
+      });
+
+      toast.success('UPLOADED 🎉', { id: uploadingToast });
+      setContextFiles([]);
+    } catch (error) {
+      const message = (error as Error).message;
+      toast.error(message, { id: uploadingToast });
+
+      await setUploadRateLimitLocal({
+        count: message.includes('5 files per day')
+          ? MAX_FILES_PER_DAY
+          : localCount,
+        size: message.includes('100MB/day')
+          ? MAX_UPLOAD_SIZE_PER_DAY
+          : localSize,
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -249,7 +311,7 @@ export function UploadMainPage() {
           <Button
             onClick={handleFilesEncryption}
             disabled={isProcessing || contextFiles.length === 0}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-white"
           >
             <Lock className="h-4 w-4" />
             {isProcessing ? 'Processing...' : 'Encrypt & Upload'}

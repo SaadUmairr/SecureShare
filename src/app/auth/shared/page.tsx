@@ -1,6 +1,5 @@
 import { auth } from '@/auth';
 import { Redirect } from '@/components/redirect';
-import { SharedFiles } from '@/components/shared-files';
 
 export default async function SharedPage() {
   const session = await auth();
@@ -8,7 +7,7 @@ export default async function SharedPage() {
 
   return (
     <>
-      <SharedFiles />
+      <p>WORK IN PROGRESS</p>
     </>
   );
 }

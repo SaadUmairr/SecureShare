@@ -1,5 +1,6 @@
 'use client';
 
+import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { FilesContextProvider } from '@/context/file.context';
 import NextTopLoader from 'nextjs-toploader';
@@ -18,10 +19,17 @@ export function Providers({
   if (!mounted) return null;
 
   return (
-    <div className="px-4 py-2">
+    <>
       <Toaster />
       <NextTopLoader showSpinner={false} />
-      <FilesContextProvider>{children}</FilesContextProvider>
-    </div>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <FilesContextProvider>{children}</FilesContextProvider>
+      </ThemeProvider>
+    </>
   );
 }

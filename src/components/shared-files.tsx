@@ -1,7 +1,12 @@
 'use client';
 
-import { SharedFilesRecord } from '@/actions/file';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { fetchAllSharedFiles } from '@/actions/file';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@/context/user.context';
 import { FileShare } from '@prisma/client';
@@ -9,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export function SharedFiles() {
   const { googleID } = useUser();
@@ -20,10 +26,10 @@ export function SharedFiles() {
       if (!googleID) return;
       setLoading(true);
       try {
-        const response = await SharedFilesRecord(googleID);
+        const response = await fetchAllSharedFiles(googleID);
         setRecords(response);
       } catch (error) {
-        console.error('Error fetching shared files:', error);
+        toast.error(`Error fetching shared files: ${(error as Error).message}`);
       } finally {
         setLoading(false);
       }
@@ -71,7 +77,7 @@ export function SharedFiles() {
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium">Shared Files</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-4">
         {records.map((record, index) => {
           const timeLeft = formatDistanceToNow(record.expireAt);
           const isExpiringSoon =
@@ -79,22 +85,11 @@ export function SharedFiles() {
 
           return (
             <Card key={index} className="overflow-hidden">
-              <CardContent className="relative p-4">
-                <div className="absolute top-3 right-3 rounded-full bg-gray-100 px-2 py-0.5 text-xs">
-                  #{index + 1}
-                </div>
-
-                <div className="pr-8">
-                  <h3 className="mb-1 truncate text-sm font-medium">
-                    {record.originalName}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {record.fileSize ? `${record.fileSize}` : 'Size unknown'}
-                  </p>
-                </div>
-              </CardContent>
-
-              <CardFooter className="px-4 py-3">
+              <CardHeader>
+                {/* add decryption filename util */}
+                {/* <CardTitle>{record.originalName}</CardTitle> */}
+              </CardHeader>
+              <CardContent className="relative px-4 py-2">
                 <div className="flex w-full items-center justify-between">
                   <span
                     className={`text-xs ${isExpiringSoon ? 'text-orange-500' : 'text-gray-500'}`}
@@ -106,12 +101,13 @@ export function SharedFiles() {
                     href={`/share/${record.shareId}`}
                     target="_blank"
                     className="text-blue-600 hover:text-blue-800"
-                    aria-label={`Open shared link for ${record.originalName}`}
+
+                    // aria-label={`Open shared link for ${record.originalName}`}
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                 </div>
-              </CardFooter>
+              </CardContent>
             </Card>
           );
         })}
