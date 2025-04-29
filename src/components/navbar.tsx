@@ -58,7 +58,7 @@ export function Navbar() {
           </Link>
           <Link href="/login">
             <Button className="rounded-md bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800">
-              Get Started
+              Go to App
             </Button>
           </Link>
         </div>

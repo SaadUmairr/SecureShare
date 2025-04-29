@@ -170,12 +170,11 @@ export function AboutPage() {
                 Join the Community
               </Button>
             </Link>
-            <Link
-              href="https://github.com/SaadUmairr/SecureShare"
-              className="flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-black px-6 py-3 font-medium text-white transition-colors hover:bg-gray-900 dark:border-slate-600"
-            >
-              <Image src={GithubIcon} alt="Github" height={20} width={20} />
-              Contribute on GitHub
+            <Link href="https://github.com/SaadUmairr/SecureShare">
+              <Button className="flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-black px-6 py-3 font-medium text-white transition-colors hover:bg-gray-900 dark:border-slate-600">
+                <Image src={GithubIcon} alt="Github" height={20} width={20} />
+                Contribute on GitHub
+              </Button>
             </Link>
           </div>
         </div>

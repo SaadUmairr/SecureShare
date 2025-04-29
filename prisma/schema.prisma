@@ -46,23 +46,6 @@ model File {
   shareFiles FileShare[]
 }
 
-// model ShareGroup {
-//   id             String    @id @default(cuid())
-//   shareId        String    @unique
-//   userId         String?
-//   ipAddress      String?   @db.VarChar(45)
-//   passphraseHash String
-//   maxDownloads   Int?      @default(3)
-//   downloadCount  Int       @default(0)
-//   createdAt      DateTime  @default(now())
-//   expireAt       DateTime? @default(dbgenerated("(now() + interval '24 hours')"))
-
-//   user  User?       @relation(fields: [userId], references: [googleID], onDelete: Cascade)
-//   files ShareFile[]
-
-//   @@index([ipAddress, createdAt])
-// }
-
 model FileShare {
   id             String   @id @default(cuid())
   shareId        String   @unique

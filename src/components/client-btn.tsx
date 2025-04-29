@@ -15,7 +15,7 @@ export function GoogleClientButton() {
     <Button
       variant="outline"
       type="button"
-      className="w-full"
+      className="w-full border-[#1446B5] dark:border-[#1446B5]"
       onClick={handleLogin}
     >
       <svg
@@ -48,7 +48,7 @@ export function GuestClientButton() {
     <Button
       variant="outline"
       type="button"
-      className="w-full gap-x-4"
+      className="w-full gap-x-4 border-[#1446B5] dark:border-[#1446B5]"
       onClick={handleGuestLogin}
       disabled={loading}
     >

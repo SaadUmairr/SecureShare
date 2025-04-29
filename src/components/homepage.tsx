@@ -30,7 +30,7 @@ export function HomePage() {
               device unencrypted. Share files with confidence knowing your
               privacy is protected.
             </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/login">
                 <Button className="rounded-md bg-indigo-600 px-6 py-3 font-medium text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800">
                   Start Sharing Securely

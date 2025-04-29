@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 
 interface UserContextProp {
   googleID: string;
-  setGoogleID: Dispatch<SetStateAction<string>>;
   name: string;
   email: string;
   avatar: string;
@@ -92,7 +91,6 @@ export function UserContextProvider({
     <UserContext.Provider
       value={{
         googleID,
-        setGoogleID,
         name,
         email,
         avatar,

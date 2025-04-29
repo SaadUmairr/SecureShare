@@ -13,16 +13,19 @@ export function LoginForm({
       <form>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
+            <Link
+              href="/"
               className="flex flex-col items-center gap-2 font-medium"
             >
               <div className="flex size-8 items-center justify-center rounded-md">
-                <LockIcon className="size-6" />
+                <LockIcon className="size-6 text-indigo-600 dark:text-indigo-400" />
               </div>
               <span className="sr-only">Secure Share</span>
-            </a>
-            <h1 className="text-xl font-bold">Welcome to Secure Share.</h1>
+            </Link>
+            <h1 className="text-xl font-bold">
+              Welcome to &nbsp;
+              <span className="text-blue-700">Secure Share</span>
+            </h1>
           </div>
 
           <div className="grid gap-4">
