@@ -1,5 +1,6 @@
-'use client';
+"use client"
 
+import Link from "next/link"
 import {
   FilesIcon,
   HouseIcon,
@@ -7,7 +8,7 @@ import {
   SquareArrowUpRightIcon,
   StarIcon,
   Upload,
-} from 'lucide-react';
+} from "lucide-react"
 
 import {
   SidebarGroup,
@@ -15,8 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import Link from 'next/link';
+} from "@/components/ui/sidebar"
 
 export function NavMain() {
   return (
@@ -79,5 +79,5 @@ export function NavMain() {
         </SidebarMenuItem>
       </SidebarGroup>
     </div>
-  );
+  )
 }

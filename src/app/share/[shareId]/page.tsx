@@ -1,20 +1,20 @@
-import { fetchShareDetails } from '@/actions/file';
-import { ShareFile } from '@/components/share-page';
-import { notFound } from 'next/navigation';
+import { notFound } from "next/navigation"
+import { fetchShareDetails } from "@/actions/file"
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+import { ShareFile } from "@/components/share-page"
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default async function SharePage({
   params,
 }: {
-  params: Promise<{ shareId: string }>;
+  params: Promise<{ shareId: string }>
 }) {
-  const { shareId } = await params;
-  const shareDetails = await fetchShareDetails(shareId);
-  console.log('DETAILS:  ', shareDetails);
+  const { shareId } = await params
+  const shareDetails = await fetchShareDetails(shareId)
   if (!shareDetails) {
-    notFound();
+    notFound()
   }
 
   return (
@@ -30,5 +30,5 @@ export default async function SharePage({
       downloadCount={shareDetails.downloadCount}
       maxDownloads={shareDetails.maxDownloads}
     />
-  );
+  )
 }

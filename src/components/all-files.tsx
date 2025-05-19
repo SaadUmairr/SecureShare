@@ -1,35 +1,11 @@
-'use client';
+"use client"
 
-import { DeleteFileRecord, getAllFiles } from '@/actions/file';
-import { generateGetObjectSignedURL } from '@/app/aws/s3/get-object';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-
-import { deleteObjectFromS3 } from '@/app/aws/s3/delete-object';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useKeyPair } from '@/context/keypair.context';
-import { useUser } from '@/context/user.context';
-import { cn } from '@/lib/utils';
-import { FileNameDecryptor, FileShareManager } from '@/utils/crypto.util';
-import { differenceInMinutes, format, isBefore } from 'date-fns';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from "react"
+import { DeleteFileRecord, getAllFiles } from "@/actions/file"
+import { useKeyPair } from "@/context/keypair.context"
+import { useUser } from "@/context/user.context"
+import { FileNameDecryptor, FileShareManager } from "@/utils/crypto.util"
+import { differenceInMinutes, format, isBefore } from "date-fns"
 import {
   AlertTriangle,
   Copy,
@@ -38,13 +14,38 @@ import {
   MoreHorizontal,
   Share,
   Trash2,
-} from 'lucide-react';
-import { customAlphabet } from 'nanoid';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { formatFileSize, getFileTypeInfo, trimFilename } from './file-card';
-import { Button } from './ui/button';
+} from "lucide-react"
+import { motion } from "motion/react"
+import { customAlphabet } from "nanoid"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+
+import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { deleteObjectFromS3 } from "@/app/aws/s3/delete-object"
+import { generateGetObjectSignedURL } from "@/app/aws/s3/get-object"
+
+import { formatFileSize, getFileTypeInfo, trimFilename } from "./file-card"
+import { Button } from "./ui/button"
 import {
   Form,
   FormControl,
@@ -53,19 +54,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from './ui/form';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+} from "./ui/form"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
 
 interface DecryptedFile {
-  id: string;
-  originalName: string;
-  encryptedName: string;
-  createdAt: Date;
-  expireAt: Date;
-  fileSize: bigint;
-  symmetricKey: string;
-  fileIV: string;
+  id: string
+  originalName: string
+  encryptedName: string
+  createdAt: Date
+  expireAt: Date
+  fileSize: bigint
+  symmetricKey: string
+  fileIV: string
 }
 
 // const getIstTime = (date: Date) => {
@@ -75,54 +76,54 @@ interface DecryptedFile {
 // };
 
 const getRemainingTime = (expirationTime: Date) => {
-  const now = new Date();
+  const now = new Date()
 
-  if (isBefore(expirationTime, now)) return 'Expired';
+  if (isBefore(expirationTime, now)) return "Expired"
 
-  const totalMinutes = differenceInMinutes(expirationTime, now);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  const totalMinutes = differenceInMinutes(expirationTime, now)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
 
-  return `${hours}h ${minutes}m remaining`;
-};
+  return `${hours}h ${minutes}m remaining`
+}
 const formatRemainingTime = (expirationTime: Date) => {
-  const now = new Date();
-  if (isBefore(expirationTime, now)) return 'Expired';
+  const now = new Date()
+  if (isBefore(expirationTime, now)) return "Expired"
 
-  const totalMinutes = differenceInMinutes(expirationTime, now);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  const totalMinutes = differenceInMinutes(expirationTime, now)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
 
-  return `${hours}h ${minutes}m remaining`;
-};
+  return `${hours}h ${minutes}m remaining`
+}
 
 export function AllFilesMain() {
-  const { googleID } = useUser();
-  const { privateKey } = useKeyPair();
-  const [decryptedFiles, setDecryptedFiles] = useState<DecryptedFile[]>([]);
-  const [, forceRerender] = useState(0);
+  const { googleID } = useUser()
+  const { privateKey } = useKeyPair()
+  const [decryptedFiles, setDecryptedFiles] = useState<DecryptedFile[]>([])
+  const [, forceRerender] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      forceRerender((prev) => prev + 1);
-    }, 60 * 1000);
+      forceRerender((prev) => prev + 1)
+    }, 60 * 1000)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
-    if (!googleID || !privateKey) return;
+    if (!googleID || !privateKey) return
 
     const fetchAndDecryptFiles = async () => {
-      const response = await getAllFiles(googleID);
+      const response = await getAllFiles(googleID)
       const decrypted = await Promise.all(
         response.map(async (file) => {
           const originalName = await FileNameDecryptor(
             file.fileName,
             file.fileNameIV,
             file.symmetricKey,
-            privateKey,
-          );
+            privateKey
+          )
 
           return {
             id: file.id,
@@ -133,14 +134,14 @@ export function AllFilesMain() {
             fileSize: file.fileSize,
             symmetricKey: file.symmetricKey,
             fileIV: file.fileIV,
-          };
-        }),
-      );
-      setDecryptedFiles(decrypted);
-    };
+          }
+        })
+      )
+      setDecryptedFiles(decrypted)
+    }
 
-    fetchAndDecryptFiles();
-  }, [googleID, privateKey]);
+    fetchAndDecryptFiles()
+  }, [googleID, privateKey])
 
   const handleFileDownload = async ({
     fileName,
@@ -149,64 +150,64 @@ export function AllFilesMain() {
     privateKey,
     originalName,
   }: {
-    fileName: string;
-    encryptedSymmetricKey: string;
-    fileIV: string;
-    privateKey: CryptoKey;
-    originalName: string;
+    fileName: string
+    encryptedSymmetricKey: string
+    fileIV: string
+    privateKey: CryptoKey
+    originalName: string
   }) => {
-    const presignedUrl = await generateGetObjectSignedURL(`upload/${fileName}`);
-    const response = await fetch(presignedUrl);
-    const encryptedArrayBuffer = await response.arrayBuffer();
+    const presignedUrl = await generateGetObjectSignedURL(`upload/${fileName}`)
+    const response = await fetch(presignedUrl)
+    const encryptedArrayBuffer = await response.arrayBuffer()
 
     const encryptedSymmetricKeyBytes = Uint8Array.from(
       atob(encryptedSymmetricKey),
-      (c) => c.charCodeAt(0),
-    );
+      (c) => c.charCodeAt(0)
+    )
     const symmetricKeyBuffer = await crypto.subtle.decrypt(
-      { name: 'RSA-OAEP' },
+      { name: "RSA-OAEP" },
       privateKey,
-      encryptedSymmetricKeyBytes,
-    );
+      encryptedSymmetricKeyBytes
+    )
 
     const symmetricKey = await crypto.subtle.importKey(
-      'raw',
+      "raw",
       symmetricKeyBuffer,
-      { name: 'AES-GCM' },
+      { name: "AES-GCM" },
       false,
-      ['decrypt'],
-    );
+      ["decrypt"]
+    )
 
     const decryptedBuffer = await crypto.subtle.decrypt(
       {
-        name: 'AES-GCM',
+        name: "AES-GCM",
         iv: Uint8Array.from(atob(fileIV), (c) => c.charCodeAt(0)),
       },
       symmetricKey,
-      encryptedArrayBuffer,
-    );
+      encryptedArrayBuffer
+    )
 
-    const blob = new Blob([decryptedBuffer]);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = originalName;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    const blob = new Blob([decryptedBuffer])
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = originalName
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const handleShareFile = (fileId: string) => {
-    fileId.charAt(0); // Dummy action
-  };
+    fileId.charAt(0) // Dummy action
+  }
 
   const handleDeleteFile = (fileId: string) => {
-    setDecryptedFiles(decryptedFiles.filter((file) => file.id !== fileId));
-  };
+    setDecryptedFiles(decryptedFiles.filter((file) => file.id !== fileId))
+  }
 
   // Mock function to simulate getting a file from the file name
   const getFileFromFileName = (fileName: string): File => {
-    return new File([], fileName);
-  };
+    return new File([], fileName)
+  }
 
   return (
     <div className="space-y-6">
@@ -214,9 +215,9 @@ export function AllFilesMain() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {decryptedFiles.map((file) => {
-          const mockFile = getFileFromFileName(file.originalName);
-          const { icon, color, label } = getFileTypeInfo(mockFile);
-          const isExpired = isBefore(file.expireAt, new Date());
+          const mockFile = getFileFromFileName(file.originalName)
+          const { icon, color, label } = getFileTypeInfo(mockFile)
+          const isExpired = isBefore(file.expireAt, new Date())
           // const trimmedFileName = trimFilename(file.originalName);
 
           return (
@@ -239,7 +240,7 @@ export function AllFilesMain() {
               onShare={() => handleShareFile(file.id)}
               onDelete={() => handleDeleteFile(file.id)}
             />
-          );
+          )
         })}
       </div>
 
@@ -249,21 +250,21 @@ export function AllFilesMain() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 interface FileCardProps {
-  file: DecryptedFile;
-  icon: React.ReactNode;
-  iconColor: string;
-  label: string;
-  isExpired: boolean;
-  onDownload: () => void;
-  onShare: () => void;
-  onDelete: () => void;
+  file: DecryptedFile
+  icon: React.ReactNode
+  iconColor: string
+  label: string
+  isExpired: boolean
+  onDownload: () => void
+  onShare: () => void
+  onDelete: () => void
 }
 interface SharePassphraseFormValue {
-  passphrase: string;
+  passphrase: string
 }
 const FileCard: React.FC<FileCardProps> = ({
   file,
@@ -273,37 +274,37 @@ const FileCard: React.FC<FileCardProps> = ({
   isExpired,
   onDownload,
 }) => {
-  const trimmedFileName = trimFilename(file.originalName);
-  const [shareDialogOpen, setShareDialogOpen] = useState<boolean>(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [isSharing, setIsSharing] = useState<boolean>(false);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [shareLink, setShareLink] = useState<string | null>(null);
-  const { googleID } = useUser();
-  const { privateKey } = useKeyPair();
+  const trimmedFileName = trimFilename(file.originalName)
+  const [shareDialogOpen, setShareDialogOpen] = useState<boolean>(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
+  const [isSharing, setIsSharing] = useState<boolean>(false)
+  const [isDeleting, setIsDeleting] = useState<boolean>(false)
+  const [shareLink, setShareLink] = useState<string | null>(null)
+  const { googleID } = useUser()
+  const { privateKey } = useKeyPair()
 
   const shareForm = useForm<SharePassphraseFormValue>({
     defaultValues: {
-      passphrase: '',
+      passphrase: "",
     },
-  });
+  })
 
   const handleShare = async (values: SharePassphraseFormValue) => {
     if (!googleID || !privateKey) {
-      toast.error('User not authenticated');
-      return;
+      toast.error("User not authenticated")
+      return
     }
-    const shareToast = toast.loading('Sharing...');
-    setIsSharing(true);
+    const shareToast = toast.loading("Sharing...")
+    setIsSharing(true)
 
     try {
       const nanoidShort = customAlphabet(
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~',
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~",
 
-        5,
-      );
+        5
+      )
 
-      const shareId = nanoidShort();
+      const shareId = nanoidShort()
 
       await FileShareManager({
         googleID,
@@ -317,43 +318,43 @@ const FileCard: React.FC<FileCardProps> = ({
         passphrase: values.passphrase,
         expireAt: file.expireAt,
         fileSize: file.fileSize,
-      });
+      })
 
       // Generate share link
-      const shareLink = `${window.location.origin}/share/${shareId}`;
-      setShareLink(shareLink);
-      toast.success('File shared successfully!', { id: shareToast });
+      const shareLink = `${window.location.origin}/share/${shareId}`
+      setShareLink(shareLink)
+      toast.success("File shared successfully!", { id: shareToast })
     } catch (error) {
-      toast.error((error as Error).message, { id: shareToast });
+      toast.error((error as Error).message, { id: shareToast })
     } finally {
-      setIsSharing(false);
+      setIsSharing(false)
     }
-  };
+  }
 
   const handleDelete = async () => {
-    setIsDeleting(true);
+    setIsDeleting(true)
 
     try {
-      const key = `upload/${file.encryptedName}`;
-      await deleteObjectFromS3(key);
+      const key = `upload/${file.encryptedName}`
+      await deleteObjectFromS3(key)
 
-      await DeleteFileRecord(file.id);
+      await DeleteFileRecord(file.id)
 
-      toast.success('File deleted successfully');
-      setDeleteDialogOpen(false);
+      toast.success("File deleted successfully")
+      setDeleteDialogOpen(false)
     } catch {
-      toast.error('Failed to delete file');
+      toast.error("Failed to delete file")
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   const handleCopyShareLink = () => {
     if (shareLink) {
-      navigator.clipboard.writeText(shareLink);
-      toast.success('Share link copied to clipboard!');
+      navigator.clipboard.writeText(shareLink)
+      toast.success("Share link copied to clipboard!")
     }
-  };
+  }
 
   return (
     <motion.div
@@ -361,8 +362,8 @@ const FileCard: React.FC<FileCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        'bg-card text-card-foreground relative w-full overflow-hidden rounded-lg border shadow-sm transition-colors duration-200',
-        isExpired && 'opacity-60',
+        "bg-card text-card-foreground relative w-full overflow-hidden rounded-lg border shadow-sm transition-colors duration-200",
+        isExpired && "opacity-60"
       )}
     >
       <div className="p-4">
@@ -373,10 +374,10 @@ const FileCard: React.FC<FileCardProps> = ({
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-lg',
-                    'bg-muted/50 transition-colors duration-200',
+                    "flex h-10 w-10 items-center justify-center rounded-lg",
+                    "bg-muted/50 transition-colors duration-200",
                     iconColor,
-                    isExpired && 'opacity-50',
+                    isExpired && "opacity-50"
                   )}
                 >
                   {icon}
@@ -436,8 +437,8 @@ const FileCard: React.FC<FileCardProps> = ({
               <TooltipTrigger asChild>
                 <h3
                   className={cn(
-                    'truncate text-sm font-medium',
-                    'text-foreground transition-colors duration-200',
+                    "truncate text-sm font-medium",
+                    "text-foreground transition-colors duration-200"
                   )}
                 >
                   {trimmedFileName}
@@ -452,8 +453,8 @@ const FileCard: React.FC<FileCardProps> = ({
           <div className="flex items-center justify-between">
             <span
               className={cn(
-                'truncate text-xs',
-                'text-muted-foreground transition-colors duration-200',
+                "truncate text-xs",
+                "text-muted-foreground transition-colors duration-200"
               )}
             >
               {formatFileSize(Number(file.fileSize))}
@@ -461,16 +462,16 @@ const FileCard: React.FC<FileCardProps> = ({
           </div>
 
           <div className="text-muted-foreground text-xs">
-            Uploaded: {format(file.createdAt, 'MMM d, yyyy')}
+            Uploaded: {format(file.createdAt, "MMM d, yyyy")}
           </div>
 
           <div
             className={cn(
-              'text-xs',
-              isExpired ? 'text-red-500' : 'text-amber-500',
+              "text-xs",
+              isExpired ? "text-red-500" : "text-amber-500"
             )}
           >
-            {isExpired ? 'Expired' : getRemainingTime(file.expireAt)}
+            {isExpired ? "Expired" : getRemainingTime(file.expireAt)}
           </div>
         </div>
       </div>
@@ -483,8 +484,8 @@ const FileCard: React.FC<FileCardProps> = ({
             </DialogTitle>
             <DialogDescription>
               {shareLink
-                ? 'Your file is ready to share'
-                : 'Set a secure passphrase to protect your shared file'}
+                ? "Your file is ready to share"
+                : "Set a secure passphrase to protect your shared file"}
             </DialogDescription>
           </DialogHeader>
 
@@ -516,7 +517,7 @@ const FileCard: React.FC<FileCardProps> = ({
                 </h4>
                 <p className="text-muted-foreground mt-1 text-xs">
                   Share this link and the passphrase with trusted recipients
-                  only. The link will expire in{' '}
+                  only. The link will expire in
                   {formatRemainingTime(file.expireAt)}.
                 </p>
               </div>
@@ -585,13 +586,13 @@ const FileCard: React.FC<FileCardProps> = ({
                           <span className="animate-bounce">.</span>
                           <span
                             className="animate-bounce"
-                            style={{ animationDelay: '0.2s' }}
+                            style={{ animationDelay: "0.2s" }}
                           >
                             .
                           </span>
                           <span
                             className="animate-bounce"
-                            style={{ animationDelay: '0.4s' }}
+                            style={{ animationDelay: "0.4s" }}
                           >
                             .
                           </span>
@@ -631,7 +632,7 @@ const FileCard: React.FC<FileCardProps> = ({
               <div>
                 <h4 className="text-sm font-medium">{file.originalName}</h4>
                 <p className="text-muted-foreground text-xs">
-                  {`${Number(file.fileSize).toLocaleString()} bytes · Uploaded on ${format(file.createdAt, 'MMM d, yyyy')}`}
+                  {`${Number(file.fileSize).toLocaleString()} bytes · Uploaded on ${format(file.createdAt, "MMM d, yyyy")}`}
                 </p>
               </div>
             </div>
@@ -655,13 +656,13 @@ const FileCard: React.FC<FileCardProps> = ({
                     <span className="animate-bounce">.</span>
                     <span
                       className="animate-bounce"
-                      style={{ animationDelay: '0.2s' }}
+                      style={{ animationDelay: "0.2s" }}
                     >
                       .
                     </span>
                     <span
                       className="animate-bounce"
-                      style={{ animationDelay: '0.4s' }}
+                      style={{ animationDelay: "0.4s" }}
                     >
                       .
                     </span>
@@ -678,5 +679,5 @@ const FileCard: React.FC<FileCardProps> = ({
         </DialogContent>
       </Dialog>
     </motion.div>
-  );
-};
+  )
+}

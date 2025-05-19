@@ -1,5 +1,5 @@
-import { Footer } from './footer';
-import { Navbar } from './navbar';
+import { Footer } from "./footer"
+import { Navbar } from "./navbar"
 
 export function PrivacyPolicyPage() {
   return (
@@ -31,7 +31,7 @@ export function PrivacyPolicyPage() {
               story. This policy is a quick walkthrough of what I &nbsp;
               <span className="font-bold text-slate-900 dark:text-white">
                 do
-              </span>{' '}
+              </span>
               and&nbsp;
               <span className="font-bold text-slate-900 dark:text-white">
                 don&apos;t
@@ -49,34 +49,34 @@ export function PrivacyPolicyPage() {
               <li>
                 <strong className="text-slate-900 dark:text-white">
                   Google Account Info:
-                </strong>{' '}
+                </strong>
                 Your email and profile name — just enough to let you sign in and
                 manage your uploads.
               </li>
               <li>
                 <strong className="text-slate-900 dark:text-white">
                   File Details:
-                </strong>{' '}
+                </strong>
                 Names and sizes of your files. But the files themselves?
                 They&apos;re encrypted before they even reach me.
               </li>
               <li>
                 <strong className="text-slate-900 dark:text-white">
                   Cookies:
-                </strong>{' '}
+                </strong>
                 Used to track upload limits (like number of files or total size
                 per day). No creepy tracking — just housekeeping.
               </li>
               <li>
                 <strong className="text-slate-900 dark:text-white">
                   IP Address:
-                </strong>{' '}
+                </strong>
                 This helps with rate limiting and abuse prevention.
               </li>
               <li>
                 <strong className="text-slate-900 dark:text-white">
                   Anonymous Usage Data:
-                </strong>{' '}
+                </strong>
                 Might use tools like Google Analytics to understand how people
                 use the app — but nothing personal.
               </li>
@@ -194,5 +194,5 @@ export function PrivacyPolicyPage() {
 
       <Footer />
     </div>
-  );
+  )
 }

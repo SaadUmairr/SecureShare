@@ -1,41 +1,37 @@
-'use client';
+"use client"
 
-import { fetchAllSharedFiles } from '@/actions/file';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useUser } from '@/context/user.context';
-import { FileShare } from '@prisma/client';
-import { formatDistanceToNow } from 'date-fns';
-import { ExternalLink } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { fetchAllSharedFiles } from "@/actions/file"
+import { useUser } from "@/context/user.context"
+import { FileShare } from "@prisma/client"
+import { formatDistanceToNow } from "date-fns"
+import { ExternalLink } from "lucide-react"
+import { toast } from "sonner"
+
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function SharedFiles() {
-  const { googleID } = useUser();
-  const [records, setRecords] = useState<FileShare[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { googleID } = useUser()
+  const [records, setRecords] = useState<FileShare[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchRecord = async () => {
-      if (!googleID) return;
-      setLoading(true);
+      if (!googleID) return
+      setLoading(true)
       try {
-        const response = await fetchAllSharedFiles(googleID);
-        setRecords(response);
+        const response = await fetchAllSharedFiles(googleID)
+        setRecords(response)
       } catch (error) {
-        toast.error(`Error fetching shared files: ${(error as Error).message}`);
+        toast.error(`Error fetching shared files: ${(error as Error).message}`)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchRecord();
-  }, [googleID]);
+    }
+    fetchRecord()
+  }, [googleID])
 
   if (loading) {
     return (
@@ -58,7 +54,7 @@ export function SharedFiles() {
           ))}
         </div>
       </div>
-    );
+    )
   }
 
   if (records.length === 0) {
@@ -71,7 +67,7 @@ export function SharedFiles() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
@@ -79,9 +75,9 @@ export function SharedFiles() {
       <h2 className="text-lg font-medium">Shared Files</h2>
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-4">
         {records.map((record, index) => {
-          const timeLeft = formatDistanceToNow(record.expireAt);
+          const timeLeft = formatDistanceToNow(record.expireAt)
           const isExpiringSoon =
-            timeLeft.includes('hour') || timeLeft.includes('minute');
+            timeLeft.includes("hour") || timeLeft.includes("minute")
 
           return (
             <Card key={index} className="overflow-hidden">
@@ -92,7 +88,7 @@ export function SharedFiles() {
               <CardContent className="relative px-4 py-2">
                 <div className="flex w-full items-center justify-between">
                   <span
-                    className={`text-xs ${isExpiringSoon ? 'text-orange-500' : 'text-gray-500'}`}
+                    className={`text-xs ${isExpiringSoon ? "text-orange-500" : "text-gray-500"}`}
                   >
                     {timeLeft} left
                   </span>
@@ -109,9 +105,9 @@ export function SharedFiles() {
                 </div>
               </CardContent>
             </Card>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

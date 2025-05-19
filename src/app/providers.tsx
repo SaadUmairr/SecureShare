@@ -1,23 +1,16 @@
-'use client';
+"use client"
 
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/sonner';
-import { FilesContextProvider } from '@/context/file.context';
-import NextTopLoader from 'nextjs-toploader';
-import { useEffect, useState } from 'react';
+import { FilesContextProvider } from "@/context/file.context"
+import NextTopLoader from "nextjs-toploader"
+
+import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
 
 export function Providers({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
-  const [mounted, setMounted] = useState<boolean>(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  if (!mounted) return null;
-
   return (
     <>
       <Toaster />
@@ -31,5 +24,5 @@ export function Providers({
         <FilesContextProvider>{children}</FilesContextProvider>
       </ThemeProvider>
     </>
-  );
+  )
 }

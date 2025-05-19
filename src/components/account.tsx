@@ -1,6 +1,9 @@
-'use client';
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from "next/image"
+import { AlertCircle, MailIcon, UserIcon } from "lucide-react"
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogClose,
@@ -10,22 +13,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { AlertCircle, MailIcon, UserIcon } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from './ui/button';
+} from "@/components/ui/dialog"
+
+import { Button } from "./ui/button"
 
 interface AccountInfoProp {
-  username: string;
-  email: string;
-  avatarUrl: string;
+  username: string
+  email: string
+  avatarUrl: string
 }
 
 export function Account({ username, email, avatarUrl }: AccountInfoProp) {
   const accountDeleteHandler = async () => {
     // TODO: MAKE ACCOUNT DELETE OPERATIONS
-    console.log('ACCOUNT DELETE ACTION');
-  };
+    console.log("ACCOUNT DELETE ACTION")
+  }
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <Card className="border-none shadow-sm">
@@ -138,5 +140,5 @@ export function Account({ username, email, avatarUrl }: AccountInfoProp) {
         </div>
       </div>
     </div>
-  );
+  )
 }

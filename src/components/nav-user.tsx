@@ -1,9 +1,12 @@
-'use client';
+"use client"
 
-import { ChevronsUpDown, LogOut, UserIcon } from 'lucide-react';
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { LogoutHandler } from "@/actions/user"
+import { ChevronsUpDown, LogOut, UserIcon } from "lucide-react"
+import { toast } from "sonner"
 
-import { LogoutHandler } from '@/actions/user';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,55 +15,52 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/components/ui/sidebar';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+} from "@/components/ui/sidebar"
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
+    name: string
+    email: string
+    avatar: string
+  }
 }) {
-  const router = useRouter();
+  const router = useRouter()
 
-  const { isMobile } = useSidebar();
+  const { isMobile } = useSidebar()
 
   const avatarFallback = (name: string) => {
     if (!name) {
-      return ''; // Or perhaps some other default like "??"
+      return "" // Or perhaps some other default like "??"
     }
 
-    const fallback = name.split(' ');
-    const firstInitial = fallback[0]?.[0]?.toUpperCase() || '';
+    const fallback = name.split(" ")
+    const firstInitial = fallback[0]?.[0]?.toUpperCase() || ""
 
     if (fallback.length > 1) {
-      const lastInitial = fallback[-1]?.[0]?.toUpperCase() || '';
-      return `${firstInitial}${lastInitial}`;
+      const lastInitial = fallback[-1]?.[0]?.toUpperCase() || ""
+      return `${firstInitial}${lastInitial}`
     }
-    return firstInitial;
-  };
+    return firstInitial
+  }
 
   const handleLogout = async () => {
-    const logoutToast = toast.loading('Logging out...');
+    const logoutToast = toast.loading("Logging out...")
     try {
-      await LogoutHandler();
-      toast.success('Logged out', { id: logoutToast });
-      router.replace('/');
+      await LogoutHandler()
+      toast.success("Logged out", { id: logoutToast })
+      router.replace("/")
     } catch (error) {
-      toast.error(`FAILED: ${(error as Error).message}`, { id: logoutToast });
+      toast.error(`FAILED: ${(error as Error).message}`, { id: logoutToast })
     }
-  };
+  }
 
   return (
     <SidebarMenu>
@@ -86,7 +86,7 @@ export function NavUser({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
+            side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
@@ -123,5 +123,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }

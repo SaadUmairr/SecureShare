@@ -1,16 +1,18 @@
-import { AppSidebar } from '@/components/app-sidebar';
-import ThemeToggler from '@/components/theme-toggle';
-import { Separator } from '@/components/ui/separator';
+import { UserContextProvider } from "@/context/user.context"
+
+import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { UserContextProvider } from '@/context/user.context';
+} from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
+import ThemeToggler from "@/components/theme-toggle"
+
 export default function AuthLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <UserContextProvider>
@@ -35,5 +37,5 @@ export default function AuthLayout({
         </SidebarInset>
       </SidebarProvider>
     </UserContextProvider>
-  );
+  )
 }

@@ -1,11 +1,13 @@
-'use client';
-import { ExternalLink, KeyIcon, KeySquareIcon, LockIcon } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import Github from '../../public/github.svg';
-import { Footer } from './footer';
-import { Navbar } from './navbar';
-import { Button } from './ui/button';
+"use client"
+
+import Image from "next/image"
+import Link from "next/link"
+import { ExternalLink, KeyIcon, KeySquareIcon, LockIcon } from "lucide-react"
+
+import Github from "../../public/github.svg"
+import { Footer } from "./footer"
+import { Navbar } from "./navbar"
+import { Button } from "./ui/button"
 
 export function HomePage() {
   return (
@@ -119,5 +121,5 @@ export function HomePage() {
       {/* Footer */}
       <Footer />
     </div>
-  );
+  )
 }

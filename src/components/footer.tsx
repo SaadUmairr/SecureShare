@@ -1,7 +1,8 @@
-import Image from 'next/image';
-import Github from '../../public/github.svg';
-import { LockIcon } from 'lucide-react';
-import Link from 'next/link';
+import Image from "next/image"
+import Link from "next/link"
+import { LockIcon } from "lucide-react"
+
+import Github from "../../public/github.svg"
 
 export function Footer() {
   return (
@@ -135,5 +136,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

@@ -1,16 +1,18 @@
-'use client';
-import { LockIcon } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
-import GithubIcon from '../../public/github.svg';
-import ThemeToggler from './theme-toggle';
-import { Button } from './ui/button';
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { LockIcon } from "lucide-react"
+import { useTheme } from "next-themes"
+
+import GithubIcon from "../../public/github.svg"
+import ThemeToggler from "./theme-toggle"
+import { Button } from "./ui/button"
 
 export function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { theme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { theme } = useTheme()
 
   return (
     <nav className="sticky top-0 z-10 bg-white shadow-sm dark:bg-slate-800 dark:text-white">
@@ -38,8 +40,8 @@ export function Navbar() {
             target="_blank"
           >
             <Button
-              variant={theme === 'dark' ? 'ghost' : 'default'}
-              className={`${theme === 'light' ? 'rounded-full bg-slate-800' : ''}`}
+              variant={theme === "dark" ? "ghost" : "default"}
+              className={`${theme === "light" ? "rounded-full bg-slate-800" : ""}`}
             >
               <Image src={GithubIcon} width={20} height={20} alt="Github" />
             </Button>
@@ -124,5 +126,5 @@ export function Navbar() {
         </div>
       )}
     </nav>
-  );
+  )
 }

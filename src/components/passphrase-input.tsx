@@ -1,6 +1,25 @@
-'use client';
-import { getUserKeyPair, setPassphraseStatus } from '@/actions/user';
-import { Button } from '@/components/ui/button';
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { getUserKeyPair, setPassphraseStatus } from "@/actions/user"
+import { useUser } from "@/context/user.context"
+import { savePassphraseLocally } from "@/utils/idb.util"
+import { PassphrasePepper } from "@/utils/passphrase.util"
+import bcrypt from "bcryptjs"
+import { AnimatePresence, motion } from "framer-motion"
+import {
+  AlertTriangle,
+  Check,
+  EyeIcon,
+  EyeOffIcon,
+  Lock,
+  Shield,
+} from "lucide-react"
+import { toast } from "sonner"
+
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogClose,
@@ -8,138 +27,128 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { DrawerDescription } from '@/components/ui/drawer';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useUser } from '@/context/user.context';
-import { cn } from '@/lib/utils';
-import { savePassphraseLocally } from '@/utils/idb.util';
-import { PassphrasePepper } from '@/utils/passphrase.util';
-import bcrypt from 'bcryptjs';
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Check, Eye, EyeOff, Lock, Shield } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+} from "@/components/ui/dialog"
+import { DrawerDescription } from "@/components/ui/drawer"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface ValidationChecks {
-  uppercase: boolean;
-  lowercase: boolean;
-  specialChar: boolean;
-  number: boolean;
-  minLength: boolean;
+  uppercase: boolean
+  lowercase: boolean
+  specialChar: boolean
+  number: boolean
+  minLength: boolean
 }
 
 export const PassphraseInput = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const mode = searchParams.get('mode'); // this could be 'setup' or 'enter'
-  const { googleID, setPassphrase } = useUser();
-  const [showEducation, setShowEducation] = useState(mode === 'setup');
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const mode = searchParams.get("mode") // this could be 'setup' or 'enter'
+  const { googleID, setPassphrase } = useUser()
+  const [showEducation, setShowEducation] = useState(mode === "setup")
   const [showPassphraseDialog, setShowPassphraseDialog] = useState(
-    mode === 'enter',
-  );
-  const [passphraseState, setPassphraseState] = useState('');
-  const [confirmPassphrase, setConfirmPassphrase] = useState('');
-  const [passwordVisible, setPasswordVisible] = useState(false);
+    mode === "enter"
+  )
+  const [passphraseState, setPassphraseState] = useState("")
+  const [confirmPassphrase, setConfirmPassphrase] = useState("")
+  const [passwordVisible, setPasswordVisible] = useState(false)
   const [validationChecks, setValidationChecks] = useState<ValidationChecks>({
     uppercase: false,
     lowercase: false,
     specialChar: false,
     number: false,
     minLength: false,
-  });
+  })
 
   // Calculate strength percentage
   const getStrengthPercentage = () => {
-    const checksCount = Object.values(validationChecks).filter(Boolean).length;
-    return (checksCount / 5) * 100;
-  };
+    const checksCount = Object.values(validationChecks).filter(Boolean).length
+    return (checksCount / 5) * 100
+  }
 
   // Get color based on strength
   const getStrengthColor = () => {
-    const percentage = getStrengthPercentage();
-    if (percentage <= 20) return 'bg-red-500';
-    if (percentage <= 40) return 'bg-orange-500';
-    if (percentage <= 60) return 'bg-yellow-500';
-    if (percentage <= 80) return 'bg-blue-500';
-    return 'bg-green-500';
-  };
+    const percentage = getStrengthPercentage()
+    if (percentage <= 20) return "bg-red-500"
+    if (percentage <= 40) return "bg-orange-500"
+    if (percentage <= 60) return "bg-yellow-500"
+    if (percentage <= 80) return "bg-blue-500"
+    return "bg-green-500"
+  }
 
   // Get strength label
   const getStrengthLabel = () => {
-    const percentage = getStrengthPercentage();
-    if (percentage <= 20) return 'Very Weak';
-    if (percentage <= 40) return 'Weak';
-    if (percentage <= 60) return 'Medium';
-    if (percentage <= 80) return 'Strong';
-    return 'Very Strong';
-  };
+    const percentage = getStrengthPercentage()
+    if (percentage <= 20) return "Very Weak"
+    if (percentage <= 40) return "Weak"
+    if (percentage <= 60) return "Medium"
+    if (percentage <= 80) return "Strong"
+    return "Very Strong"
+  }
 
   // Update validation checks when passphrase changes
   useEffect(() => {
-    if (mode === 'setup') {
+    if (mode === "setup") {
       setValidationChecks({
         uppercase: /[A-Z]/.test(passphraseState),
         lowercase: /[a-z]/.test(passphraseState),
         specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(passphraseState),
         number: /[0-9]/.test(passphraseState),
         minLength: passphraseState.length >= 8,
-      });
+      })
     }
-  }, [passphraseState, mode]);
+  }, [passphraseState, mode])
 
   // Handle education drawer close
   const handleEducationUnderstand = () => {
-    setShowEducation(false);
-    setShowPassphraseDialog(true);
-  };
+    setShowEducation(false)
+    setShowPassphraseDialog(true)
+  }
 
   // Handle submit
   const handleSubmit = async () => {
-    if (mode === 'setup') {
-      setPassphrase(passphraseState);
-      savePassphraseLocally(passphraseState);
-      setPassphraseStatus(googleID);
-      toast.success('Passphrase set successfully!');
-      router.replace('/auth/upload');
-    } else if (mode === 'enter') {
-      const keypair = await getUserKeyPair(googleID);
+    if (mode === "setup") {
+      setPassphrase(passphraseState)
+      savePassphraseLocally(passphraseState)
+      setPassphraseStatus(googleID)
+      toast.success("Passphrase set successfully!")
+      router.replace("/auth/upload")
+    } else if (mode === "enter") {
+      const keypair = await getUserKeyPair(googleID)
       if (!keypair) {
-        toast.error('USER DETAILS NOT AVAILABLE');
-        return;
+        toast.error("USER DETAILS NOT AVAILABLE")
+        return
       }
 
       const passphraseWithPepper = await PassphrasePepper(
         passphraseState,
-        googleID,
-      );
-      setPassphrase(passphraseState);
-      savePassphraseLocally(passphraseState);
+        googleID
+      )
+      setPassphrase(passphraseState)
+      savePassphraseLocally(passphraseState)
       const isPassphraseCorrect = await bcrypt.compare(
         passphraseWithPepper,
-        keypair?.passphrase,
-      );
+        keypair?.passphrase
+      )
       if (!isPassphraseCorrect) {
-        toast.error('INCORRECT PASSPRHASE');
-        return;
+        toast.error("INCORRECT PASSPRHASE")
+        return
       }
-      toast.success('Passphrase accepted!');
-      router.replace('/auth/upload');
+      toast.success("Passphrase accepted!")
+      router.replace("/auth/upload")
     }
-  };
+  }
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
+    setPasswordVisible(!passwordVisible)
+  }
 
   const passphrasesMatch =
-    mode === 'enter' || passphraseState === confirmPassphrase;
+    mode === "enter" || passphraseState === confirmPassphrase
   const isFormValid =
-    mode === 'enter'
+    mode === "enter"
       ? passphraseState.length > 0
-      : Object.values(validationChecks).every(Boolean) && passphrasesMatch;
+      : Object.values(validationChecks).every(Boolean) && passphrasesMatch
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -150,17 +159,17 @@ export const PassphraseInput = () => {
         delayChildren: 0.2,
       },
     },
-  };
+  }
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 },
-  };
+  }
 
   return (
     <div className="container flex h-screen items-center justify-center">
       {/* Education Drawer - Only shown in setup mode */}
-      {mode === 'setup' && (
+      {mode === "setup" && (
         <Dialog open={showEducation}>
           <DialogContent className="min-h-[85vh] overflow-y-hidden">
             <div className="mx-auto max-w-md px-4 pb-8">
@@ -247,9 +256,9 @@ export const PassphraseInput = () => {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-center text-xl">
-                  {mode === 'setup'
-                    ? 'Create a Secure Passphrase'
-                    : 'Enter Your Passphrase'}
+                  {mode === "setup"
+                    ? "Create a Secure Passphrase"
+                    : "Enter Your Passphrase"}
                 </DialogTitle>
               </DialogHeader>
 
@@ -262,16 +271,16 @@ export const PassphraseInput = () => {
                 {/* Passphrase Input */}
                 <div className="space-y-2">
                   <Label htmlFor="passphrase" className="text-sm font-medium">
-                    {mode === 'setup' ? 'Passphrase' : 'Enter Passphrase'}
+                    {mode === "setup" ? "Passphrase" : "Enter Passphrase"}
                   </Label>
                   <div className="relative">
                     <Input
-                      type={passwordVisible ? 'text' : 'password'}
+                      type={passwordVisible ? "text" : "password"}
                       id="passphrase"
                       placeholder={
-                        mode === 'setup'
-                          ? 'Enter your passphrase'
-                          : 'Enter your passphrase to continue'
+                        mode === "setup"
+                          ? "Enter your passphrase"
+                          : "Enter your passphrase to continue"
                       }
                       value={passphraseState}
                       onChange={(e) => setPassphraseState(e.target.value)}
@@ -286,9 +295,9 @@ export const PassphraseInput = () => {
                       tabIndex={-1}
                     >
                       {passwordVisible ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <EyeOffIcon className="h-4 w-4" />
                       )}
                       <span className="sr-only">
                         Toggle password visibility
@@ -298,7 +307,7 @@ export const PassphraseInput = () => {
                 </div>
 
                 {/* Confirm Passphrase Input - Only in setup mode */}
-                {mode === 'setup' && (
+                {mode === "setup" && (
                   <div className="space-y-2">
                     <Label
                       htmlFor="confirmPassphrase"
@@ -322,7 +331,7 @@ export const PassphraseInput = () => {
                           }}
                           animate={{
                             opacity: 1,
-                            height: 'auto',
+                            height: "auto",
                           }}
                           exit={{
                             opacity: 0,
@@ -338,18 +347,18 @@ export const PassphraseInput = () => {
                 )}
 
                 {/* Strength Meter - Only in setup mode */}
-                {mode === 'setup' && (
+                {mode === "setup" && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Strength</span>
                       <span
                         className={cn(
-                          'text-sm font-medium',
+                          "text-sm font-medium",
                           getStrengthPercentage() <= 40
-                            ? 'text-red-500'
+                            ? "text-red-500"
                             : getStrengthPercentage() <= 60
-                              ? 'text-yellow-500'
-                              : 'text-green-500',
+                              ? "text-yellow-500"
+                              : "text-green-500"
                         )}
                       >
                         {getStrengthLabel()}
@@ -357,12 +366,12 @@ export const PassphraseInput = () => {
                     </div>
                     <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
                       <motion.div
-                        initial={{ width: '0%' }}
+                        initial={{ width: "0%" }}
                         animate={{
                           width: `${getStrengthPercentage()}%`,
                         }}
                         transition={{ duration: 0.5 }}
-                        className={cn('h-full', getStrengthColor())}
+                        className={cn("h-full", getStrengthColor())}
                       />
                     </div>
 
@@ -405,7 +414,7 @@ export const PassphraseInput = () => {
                   disabled={!isFormValid}
                   onClick={handleSubmit}
                 >
-                  {mode === 'setup' ? 'Create Passphrase' : 'Continue'}
+                  {mode === "setup" ? "Create Passphrase" : "Continue"}
                 </Button>
               </DialogClose>
             </DialogContent>
@@ -413,8 +422,8 @@ export const PassphraseInput = () => {
         )}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}
 const RequirementItem = ({ met, text }: { met: boolean; text: string }) => {
   return (
     <motion.div
@@ -423,14 +432,14 @@ const RequirementItem = ({ met, text }: { met: boolean; text: string }) => {
         visible: { opacity: 1, x: 0 },
       }}
       className={cn(
-        'flex items-center gap-2 rounded-md p-2 text-xs',
+        "flex items-center gap-2 rounded-md p-2 text-xs",
         met
-          ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-          : 'bg-muted text-muted-foreground',
+          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+          : "bg-muted text-muted-foreground"
       )}
     >
       {met && <Check className="h-3 w-3 flex-shrink-0" />}
       <span>{text}</span>
     </motion.div>
-  );
-};
+  )
+}

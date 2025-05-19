@@ -1,15 +1,16 @@
-import { LockIcon } from 'lucide-react';
+import Link from "next/link"
+import { LockIcon } from "lucide-react"
 
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
-import { GoogleClientButton, GuestClientButton } from './client-btn';
+import { cn } from "@/lib/utils"
+
+import { GoogleClientButton, GuestClientButton } from "./client-btn"
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<"div">) {
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
@@ -37,10 +38,10 @@ export function LoginForm({
         </div>
       </form>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our
-        <Link href="/tos">Terms of Service</Link>
-        and <Link href="/privacy">Privacy Policy</Link>.
+        By clicking continue, you agree to our &nbsp;
+        <Link href="/tos">Terms of Service</Link>&nbsp; and &nbsp;
+        <Link href="/privacy">Privacy Policy</Link>.
       </div>
     </div>
-  );
+  )
 }

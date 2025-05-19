@@ -1,5 +1,5 @@
-import TermsOfServicePage from '@/components/TOS';
+import TermsOfServicePage from "@/components/TOS"
 
 export default function TOS() {
-  return <TermsOfServicePage />;
+  return <TermsOfServicePage />
 }

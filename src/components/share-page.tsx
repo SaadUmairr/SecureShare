@@ -1,41 +1,22 @@
-'use client';
+"use client"
 
-import { IncrementShareDownloadCount } from '@/actions/file';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react"
+import { IncrementShareDownloadCount } from "@/actions/file"
 import {
   decryptFile,
   decryptFileName,
   fetchEncryptedFile,
   triggerDownload,
-} from '@/utils/crypto.util';
-import { deriveEncryptionKeyFromPassphrase } from '@/utils/key-ops.util';
-import bcrypt from 'bcryptjs';
+} from "@/utils/crypto.util"
+import { deriveEncryptionKeyFromPassphrase } from "@/utils/key-ops.util"
+import bcrypt from "bcryptjs"
 import {
   differenceInSeconds,
   format,
   formatDistanceToNow,
   isBefore,
-} from 'date-fns';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "date-fns"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   AlertCircle,
   CheckCircle2,
@@ -46,22 +27,43 @@ import {
   Lock,
   Shield,
   Timer,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { formatFileSize } from './file-card';
+} from "lucide-react"
+import { toast } from "sonner"
+
+import { cn } from "@/lib/utils"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import { formatFileSize } from "./file-card"
 
 interface ShareFileProp {
-  shareId: string;
-  sharedFileName: string;
-  originalFileId?: string;
-  passphraseHash: string;
-  fileSize: bigint;
-  iv: string; // this should be the IV from the re-encryption (base64-encoded)
-  originalName: string;
-  downloadCount: number;
-  maxDownloads: number;
-  expireAt: Date;
+  shareId: string
+  sharedFileName: string
+  originalFileId?: string
+  passphraseHash: string
+  fileSize: bigint
+  iv: string // this should be the IV from the re-encryption (base64-encoded)
+  originalName: string
+  downloadCount: number
+  maxDownloads: number
+  expireAt: Date
 }
 
 export function ShareFile({
@@ -76,205 +78,187 @@ export function ShareFile({
   maxDownloads,
   iv, // base64 string
 }: ShareFileProp) {
-  const [passphrase, setPassphrase] = useState<string>('');
-  const [isPassphraseCorrect, setIsPassphraseCorrect] =
-    useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [downloading, setDownloading] = useState<boolean>(false);
-  const [showPassphrase, setShowPassphrase] = useState<boolean>(false);
-  const [remainingTime, setRemainingTime] = useState<string>('');
-  const [progressValue, setProgressValue] = useState<number>(0);
-  const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [passphrase, setPassphrase] = useState<string>("")
+  const [isPassphraseCorrect, setIsPassphraseCorrect] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [downloading, setDownloading] = useState<boolean>(false)
+  const [showPassphrase, setShowPassphrase] = useState<boolean>(false)
+  const [remainingTime, setRemainingTime] = useState<string>("")
+  const [progressValue, setProgressValue] = useState<number>(0)
+  const [isExpired, setIsExpired] = useState<boolean>(false)
   const [decryptedFileName, setDecryptedFileName] = useState<string | null>(
-    null,
-  );
-  const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+    null
+  )
+  const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false)
   const [downloadLimit, setDownloadLimit] = useState<number>(
-    maxDownloads - downloadCount,
-  );
-  const [, forceRerender] = useState(0);
+    maxDownloads - downloadCount
+  )
+  const [, forceRerender] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      forceRerender((prev) => prev + 1);
-    }, 60 * 1000);
+      forceRerender((prev) => prev + 1)
+    }, 60 * 1000)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
-    if (!isPassphraseCorrect || !passphrase || !originalName || !iv) return;
+    if (!isPassphraseCorrect || !passphrase || !originalName || !iv) return
 
     const originalNameDecryptor = async () => {
       try {
-        const name = await decryptFileName(originalName, passphrase, iv);
-        console.log('NAME: ', name);
-        setDecryptedFileName(name);
+        const name = await decryptFileName(originalName, passphrase, iv)
+        setDecryptedFileName(name)
       } catch (error) {
-        console.error('Failed to decrypt file name:', error);
+        console.error("Failed to decrypt file name:", error)
       }
-    };
+    }
 
-    originalNameDecryptor();
-  }, [isPassphraseCorrect, passphrase, originalName, iv]);
-
-  console.log({
-    isPassphraseCorrect,
-    passphrase,
-    originalName,
-    iv,
-  });
+    originalNameDecryptor()
+  }, [isPassphraseCorrect, passphrase, originalName, iv])
 
   // Check if file is expired and calculate remaining time
   useEffect(() => {
-    const expireDate = new Date(expireAt);
-    const now = new Date();
+    const expireDate = new Date(expireAt)
+    const now = new Date()
 
     // Check if file is expired
     if (isBefore(expireDate, now)) {
-      setIsExpired(true);
-      return;
+      setIsExpired(true)
+      return
     }
 
     // Calculate remaining time percentage
     const updateTimeRemaining = () => {
-      const now = new Date();
+      const now = new Date()
       if (isBefore(expireDate, now)) {
-        setIsExpired(true);
-        return;
+        setIsExpired(true)
+        return
       }
 
       // Format remaining time string
       const timeRemaining = formatDistanceToNow(expireDate, {
         addSuffix: true,
-      });
-      setRemainingTime(timeRemaining);
+      })
+      setRemainingTime(timeRemaining)
 
       // Calculate progress percentage for remaining time
-      const totalSeconds = differenceInSeconds(expireDate, now);
-      const totalDuration = 24 * 60 * 60; // 1 days max duration
+      const totalSeconds = differenceInSeconds(expireDate, now)
+      const totalDuration = 24 * 60 * 60 // 1 days max duration
       const percentage = Math.max(
         0,
-        Math.min(100, (totalSeconds / totalDuration) * 100),
-      );
-      setProgressValue(percentage);
-    };
+        Math.min(100, (totalSeconds / totalDuration) * 100)
+      )
+      setProgressValue(percentage)
+    }
 
-    updateTimeRemaining();
-    const timer = setInterval(updateTimeRemaining, 60000); // Update every minute
+    updateTimeRemaining()
+    const timer = setInterval(updateTimeRemaining, 60000) // Update every minute
 
-    return () => clearInterval(timer);
-  }, [expireAt]);
+    return () => clearInterval(timer)
+  }, [expireAt])
 
   const comparePassphrase = async () => {
     if (!passphrase.trim()) {
-      setError('Please enter a passphrase');
-      return;
+      setError("Please enter a passphrase")
+      return
     }
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
-      const isSame = await bcrypt.compare(passphrase, passphraseHash);
-      setIsPassphraseCorrect(isSame);
+      const isSame = await bcrypt.compare(passphrase, passphraseHash)
+      setIsPassphraseCorrect(isSame)
       if (!isSame) {
-        setError('Incorrect passphrase. Please try again.');
+        setError("Incorrect passphrase. Please try again.")
       }
     } catch {
-      setError('Error verifying passphrase. Please try again.');
+      setError("Error verifying passphrase. Please try again.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      comparePassphrase();
+    if (e.key === "Enter") {
+      comparePassphrase()
     }
-  };
+  }
 
   const handleFileDownload = async () => {
-    if (isExpired) return;
+    if (isExpired) return
 
-    const downloadToast = toast.loading('Downloading...');
-    setDownloading(true);
-    setError(null);
-
-    console.log(
-      'SHARED FILENAME: ',
-      sharedFileName,
-      'Passphrase: ',
-      passphrase,
-      'IV: ',
-      iv,
-    );
+    const downloadToast = toast.loading("Downloading...")
+    setDownloading(true)
+    setError(null)
 
     try {
       const encryptedFileArrayBuffer = await fetchEncryptedFile(
-        `upload/share/${sharedFileName}`,
-      );
+        `upload/share/${sharedFileName}`
+      )
 
-      const derivedKey = await deriveEncryptionKeyFromPassphrase(passphrase);
+      const derivedKey = await deriveEncryptionKeyFromPassphrase(passphrase)
 
       const decryptedFile = await decryptFile(
         encryptedFileArrayBuffer,
         derivedKey,
-        iv,
-      );
+        iv
+      )
 
       if (!decryptedFile || !decryptedFileName)
-        throw new Error('DETAILS ARE MISSING');
+        throw new Error("DETAILS ARE MISSING")
 
       // Increment download counter before giving the file
-      await IncrementShareDownloadCount(shareId);
+      await IncrementShareDownloadCount(shareId)
 
-      triggerDownload(decryptedFile, decryptedFileName);
-      setDownloadSuccess(true);
-      setDownloadLimit((prev) => prev - 1);
+      triggerDownload(decryptedFile, decryptedFileName)
+      setDownloadSuccess(true)
+      setDownloadLimit((prev) => prev - 1)
 
-      toast.success('Downloaded', { id: downloadToast });
+      toast.success("Downloaded", { id: downloadToast })
       setTimeout(() => {
-        setDownloadSuccess(false);
-      }, 3000);
+        setDownloadSuccess(false)
+      }, 3000)
     } catch (error) {
-      toast.error(`FAILED: ${(error as Error).message}`, { id: downloadToast });
-      setError('Failed to decrypt the file. Please try again.');
+      toast.error(`FAILED: ${(error as Error).message}`, { id: downloadToast })
+      setError("Failed to decrypt the file. Please try again.")
     } finally {
-      setDownloading(false);
+      setDownloading(false)
     }
-  };
+  }
 
   const getFileExtension = (filename: string) => {
-    return filename.split('.').pop()?.toUpperCase() || '';
-  };
+    return filename.split(".").pop()?.toUpperCase() || ""
+  }
 
   const getFileIcon = () => {
     const extension = decryptedFileName
       ? getFileExtension(decryptedFileName).toLowerCase()
-      : '';
+      : ""
 
     switch (extension) {
-      case 'pdf':
-        return <FileIcon className="h-12 w-12 text-red-500" />;
-      case 'doc':
-      case 'docx':
-        return <FileIcon className="h-12 w-12 text-blue-500" />;
-      case 'xls':
-      case 'xlsx':
-        return <FileIcon className="h-12 w-12 text-green-500" />;
-      case 'ppt':
-      case 'pptx':
-        return <FileIcon className="h-12 w-12 text-orange-500" />;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-        return <FileIcon className="h-12 w-12 text-purple-500" />;
+      case "pdf":
+        return <FileIcon className="h-12 w-12 text-red-500" />
+      case "doc":
+      case "docx":
+        return <FileIcon className="h-12 w-12 text-blue-500" />
+      case "xls":
+      case "xlsx":
+        return <FileIcon className="h-12 w-12 text-green-500" />
+      case "ppt":
+      case "pptx":
+        return <FileIcon className="h-12 w-12 text-orange-500" />
+      case "jpg":
+      case "jpeg":
+      case "png":
+        return <FileIcon className="h-12 w-12 text-purple-500" />
       default:
-        return <FileIcon className="h-12 w-12 text-gray-500" />;
+        return <FileIcon className="h-12 w-12 text-gray-500" />
     }
-  };
+  }
 
   return (
     <div className="from-background to-muted/30 flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
@@ -311,7 +295,7 @@ export function ShareFile({
                   variant="outline"
                   className="border-red-200 text-red-500"
                 >
-                  Expired on {format(new Date(expireAt), 'MMMM d, yyyy')}
+                  Expired on {format(new Date(expireAt), "MMMM d, yyyy")}
                 </Badge>
               </CardFooter>
             </Card>
@@ -378,12 +362,12 @@ export function ShareFile({
               <CardContent className="space-y-4 pt-2">
                 <div className="relative">
                   <Input
-                    type={showPassphrase ? 'text' : 'password'}
+                    type={showPassphrase ? "text" : "password"}
                     placeholder="Enter passphrase"
                     value={passphrase}
                     onChange={(e) => {
-                      setPassphrase(e.target.value);
-                      setError(null);
+                      setPassphrase(e.target.value)
+                      setError(null)
                     }}
                     onKeyDown={handleKeyDown}
                     className="pr-10"
@@ -408,7 +392,7 @@ export function ShareFile({
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -433,13 +417,13 @@ export function ShareFile({
                         <span className="animate-bounce">.</span>
                         <span
                           className="animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
+                          style={{ animationDelay: "0.2s" }}
                         >
                           .
                         </span>
                         <span
                           className="animate-bounce"
-                          style={{ animationDelay: '0.4s' }}
+                          style={{ animationDelay: "0.4s" }}
                         >
                           .
                         </span>
@@ -483,11 +467,11 @@ export function ShareFile({
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
-                          File Type:{' '}
+                          File Type:
                           {decryptedFileName
                             ? getFileExtension(decryptedFileName)
-                            : 'Unknown'}
-                        </p>{' '}
+                            : "Unknown"}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -522,12 +506,12 @@ export function ShareFile({
                   <span className="text-muted-foreground">Downloads Left</span>
                   <span
                     className={cn(
-                      'font-medium',
+                      "font-medium",
                       downloadLimit / maxDownloads <= 0.2
-                        ? 'text-red-500'
+                        ? "text-red-500"
                         : downloadLimit / maxDownloads <= 0.5
-                          ? 'text-amber-500'
-                          : 'text-green-500',
+                          ? "text-amber-500"
+                          : "text-green-500"
                     )}
                   >
                     {downloadLimit}
@@ -545,7 +529,7 @@ export function ShareFile({
                   </div>
                   <Progress value={progressValue} className="h-2" />
                   <p className="text-muted-foreground text-right text-xs">
-                    Expires {format(new Date(expireAt), 'MMM d, yyyy')}
+                    Expires {format(new Date(expireAt), "MMM d, yyyy")}
                   </p>
                 </div>
 
@@ -553,7 +537,7 @@ export function ShareFile({
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -567,7 +551,7 @@ export function ShareFile({
                   {downloadSuccess && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -597,13 +581,13 @@ export function ShareFile({
                         <span className="animate-bounce">.</span>
                         <span
                           className="animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
+                          style={{ animationDelay: "0.2s" }}
                         >
                           .
                         </span>
                         <span
                           className="animate-bounce"
-                          style={{ animationDelay: '0.4s' }}
+                          style={{ animationDelay: "0.4s" }}
                         >
                           .
                         </span>
@@ -622,5 +606,5 @@ export function ShareFile({
         )}
       </AnimatePresence>
     </div>
-  );
+  )
 }

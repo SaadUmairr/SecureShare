@@ -1,3 +1,4 @@
+import Link from "next/link"
 import {
   CloudIcon,
   KeyIcon,
@@ -5,11 +6,11 @@ import {
   Share2Icon,
   ShieldIcon,
   ZapIcon,
-} from 'lucide-react';
-import Link from 'next/link';
-import { Footer } from './footer';
-import { Navbar } from './navbar';
-import { Button } from './ui/button';
+} from "lucide-react"
+
+import { Footer } from "./footer"
+import { Navbar } from "./navbar"
+import { Button } from "./ui/button"
 
 export function FeaturesPage() {
   return (
@@ -273,5 +274,5 @@ export function FeaturesPage() {
       {/* Footer Section */}
       <Footer />
     </div>
-  );
+  )
 }

@@ -1,6 +1,7 @@
-import Link from 'next/link';
-import { Footer } from './footer';
-import { Navbar } from './navbar';
+import Link from "next/link"
+
+import { Footer } from "./footer"
+import { Navbar } from "./navbar"
 
 export default function TermsOfServicePage() {
   return (
@@ -206,5 +207,5 @@ export default function TermsOfServicePage() {
       {/* Footer Section */}
       <Footer />
     </div>
-  );
+  )
 }

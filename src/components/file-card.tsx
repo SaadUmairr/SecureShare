@@ -1,19 +1,6 @@
-'use client';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+"use client"
+
+import React from "react"
 import {
   Archive,
   BookOpen,
@@ -30,201 +17,216 @@ import {
   Text,
   Video,
   X,
-} from 'lucide-react';
-import React from 'react';
+} from "lucide-react"
+import { motion } from "motion/react"
+
+import { cn } from "@/lib/utils"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface FileCardProps {
-  file: File;
-  onRemove: () => void;
-  disabled?: boolean;
+  file: File
+  onRemove: () => void
+  disabled?: boolean
 }
 
 interface FileTypeInfo {
-  icon: React.ReactNode;
-  color: string;
-  label: string;
+  icon: React.ReactNode
+  color: string
+  label: string
 }
 
 // Previous utility functions remain the same
 export function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
   if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
 }
 
 export function trimFilename(filename: string, maxLength: number = 28): string {
-  if (filename.length <= maxLength) return filename;
-  const parts = filename.split('.');
-  const extension = parts.pop();
-  const name = parts.join('.');
+  if (filename.length <= maxLength) return filename
+  const parts = filename.split(".")
+  const extension = parts.pop()
+  const name = parts.join(".")
   if (name.length <= maxLength - 4 - (extension ? extension.length + 1 : 0)) {
-    return filename;
+    return filename
   }
-  const trimmedName = name.substring(0, maxLength - 4) + '..._';
-  return extension ? `${trimmedName}.${extension}` : trimmedName;
+  const trimmedName = name.substring(0, maxLength - 4) + "..._"
+  return extension ? `${trimmedName}.${extension}` : trimmedName
 }
 
 export const getFileTypeInfo = (file: File): FileTypeInfo => {
-  const extension = file.name.split('.').pop()?.toLowerCase();
-  const mimeType = file.type.toLowerCase();
+  const extension = file.name.split(".").pop()?.toLowerCase()
+  const mimeType = file.type.toLowerCase()
 
   // Image files
-  if (mimeType.startsWith('image/')) {
+  if (mimeType.startsWith("image/")) {
     return {
       icon: <ImageIcon className="h-5 w-5" />,
-      color: 'text-indigo-600',
-      label: `Image File (${mimeType.split('/')[1].toUpperCase()})`,
-    };
+      color: "text-indigo-600",
+      label: `Image File (${mimeType.split("/")[1].toUpperCase()})`,
+    }
   }
 
   // Video files
-  if (mimeType.startsWith('video/')) {
+  if (mimeType.startsWith("video/")) {
     return {
       icon: <Video className="h-5 w-5" />,
-      color: 'text-purple-600',
-      label: `Video File (${mimeType.split('/')[1].toUpperCase()})`,
-    };
+      color: "text-purple-600",
+      label: `Video File (${mimeType.split("/")[1].toUpperCase()})`,
+    }
   }
 
   // Audio files
-  if (mimeType.startsWith('audio/')) {
+  if (mimeType.startsWith("audio/")) {
     return {
       icon: <Music className="h-5 w-5" />,
-      color: 'text-purple-600',
-      label: `Audio File (${mimeType.split('/')[1].toUpperCase()})`,
-    };
+      color: "text-purple-600",
+      label: `Audio File (${mimeType.split("/")[1].toUpperCase()})`,
+    }
   }
 
   // Code files
   const codeExtensions = {
-    js: 'JavaScript',
-    jsx: 'React JSX',
-    ts: 'TypeScript',
-    tsx: 'React TSX',
-    py: 'Python',
-    java: 'Java',
-    cpp: 'C++',
-    c: 'C',
-    rb: 'Ruby',
-    php: 'PHP',
-    go: 'Go',
-    rs: 'Rust',
-    swift: 'Swift',
-    kt: 'Kotlin',
-  };
+    js: "JavaScript",
+    jsx: "React JSX",
+    ts: "TypeScript",
+    tsx: "React TSX",
+    py: "Python",
+    java: "Java",
+    cpp: "C++",
+    c: "C",
+    rb: "Ruby",
+    php: "PHP",
+    go: "Go",
+    rs: "Rust",
+    swift: "Swift",
+    kt: "Kotlin",
+  }
 
   if (extension && extension in codeExtensions) {
     return {
       icon: <SquareChevronRight className="h-5 w-5" />,
-      color: 'text-emerald-600',
+      color: "text-emerald-600",
       label: `Code File (${codeExtensions[extension as keyof typeof codeExtensions]})`,
-    };
+    }
   }
 
   // Spreadsheet files
-  const spreadsheetExtensions = ['xlsx', 'xls', 'csv', 'ods'];
+  const spreadsheetExtensions = ["xlsx", "xls", "csv", "ods"]
   if (extension && spreadsheetExtensions.includes(extension)) {
     return {
       icon: <FileSpreadsheet className="h-5 w-5" />,
-      color: 'text-green-600',
-      label: 'Spreadsheet File',
-    };
+      color: "text-green-600",
+      label: "Spreadsheet File",
+    }
   }
 
   // PDF files
-  if (extension === 'pdf' || mimeType === 'application/pdf') {
+  if (extension === "pdf" || mimeType === "application/pdf") {
     return {
       icon: <BookOpen className="h-5 w-5" />,
-      color: 'text-red-600',
-      label: 'PDF Document',
-    };
+      color: "text-red-600",
+      label: "PDF Document",
+    }
   }
 
   // Presentation files
-  const presentationExtensions = ['ppt', 'pptx', 'key', 'odp'];
+  const presentationExtensions = ["ppt", "pptx", "key", "odp"]
   if (extension && presentationExtensions.includes(extension)) {
     return {
       icon: <Presentation className="h-5 w-5" />,
-      color: 'text-orange-600',
-      label: 'Presentation File',
-    };
+      color: "text-orange-600",
+      label: "Presentation File",
+    }
   }
 
   // Archive files
-  const archiveExtensions = ['zip', 'rar', '7z', 'tar', 'gz'];
+  const archiveExtensions = ["zip", "rar", "7z", "tar", "gz"]
   if (extension && archiveExtensions.includes(extension)) {
     return {
       icon: <Archive className="h-5 w-5" />,
-      color: 'text-yellow-600',
-      label: 'Archive File',
-    };
+      color: "text-yellow-600",
+      label: "Archive File",
+    }
   }
 
   // Database files
-  const databaseExtensions = ['sql', 'db', 'sqlite', 'mongodb'];
+  const databaseExtensions = ["sql", "db", "sqlite", "mongodb"]
   if (extension && databaseExtensions.includes(extension)) {
     return {
       icon: <Table className="h-5 w-5" />,
-      color: 'text-blue-600',
-      label: 'Database File',
-    };
+      color: "text-blue-600",
+      label: "Database File",
+    }
   }
 
   // JSON files
-  if (extension === 'json' || mimeType === 'application/json') {
+  if (extension === "json" || mimeType === "application/json") {
     return {
       icon: <FileJson className="h-5 w-5" />,
-      color: 'text-amber-600',
-      label: 'JSON File',
-    };
+      color: "text-amber-600",
+      label: "JSON File",
+    }
   }
 
   // Email files
-  const emailExtensions = ['eml', 'msg'];
+  const emailExtensions = ["eml", "msg"]
   if (extension && emailExtensions.includes(extension)) {
     return {
       icon: <Mail className="h-5 w-5" />,
-      color: 'text-sky-600',
-      label: 'Email File',
-    };
+      color: "text-sky-600",
+      label: "Email File",
+    }
   }
 
   // Text files
-  const textExtensions = ['txt', 'md', 'rtf', 'doc', 'docx'];
+  const textExtensions = ["txt", "md", "rtf", "doc", "docx"]
   if (
-    mimeType.startsWith('text/') ||
+    mimeType.startsWith("text/") ||
     (extension && textExtensions.includes(extension))
   ) {
     return {
       icon: <Text className="h-5 w-5" />,
-      color: 'text-teal-600',
-      label: 'Text Document',
-    };
+      color: "text-teal-600",
+      label: "Text Document",
+    }
   }
   return {
     icon: <File className="h-5 w-5" />,
-    color: 'text-teal-600',
-    label: 'File',
-  };
-};
+    color: "text-teal-600",
+    label: "File",
+  }
+}
 const timeOptions = [
-  { value: '1d', label: '1 Day' },
-  { value: '1w', label: '1 Week' },
-  { value: '2w', label: '2 Weeks' },
-  { value: '1m', label: '1 Month' },
-];
+  { value: "1d", label: "1 Day" },
+  { value: "1w", label: "1 Week" },
+  { value: "2w", label: "2 Weeks" },
+  { value: "1m", label: "1 Month" },
+]
 
 export const FileCard: React.FC<FileCardProps> = ({
   file,
   onRemove,
   disabled = false,
 }) => {
-  const [selectedTime, setSelectedTime] = React.useState('1d');
-  const trimmedFileName = trimFilename(file.name);
-  const { icon, color, label } = getFileTypeInfo(file);
-  const isDefaultTime = selectedTime === '1d';
+  const [selectedTime, setSelectedTime] = React.useState("1d")
+  const trimmedFileName = trimFilename(file.name)
+  const { icon, color, label } = getFileTypeInfo(file)
+  const isDefaultTime = selectedTime === "1d"
 
   return (
     <motion.div
@@ -232,8 +234,8 @@ export const FileCard: React.FC<FileCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        'bg-card text-card-foreground relative w-full overflow-hidden rounded-lg border shadow-sm transition-colors duration-200',
-        disabled && 'cursor-not-allowed opacity-60',
+        "bg-card text-card-foreground relative w-full overflow-hidden rounded-lg border shadow-sm transition-colors duration-200",
+        disabled && "cursor-not-allowed opacity-60"
       )}
     >
       <motion.button
@@ -243,11 +245,11 @@ export const FileCard: React.FC<FileCardProps> = ({
         disabled={disabled}
         aria-label={`Remove ${file.name}`}
         className={cn(
-          'absolute top-2 right-2 z-10 rounded-full p-1.5',
-          'text-muted-foreground hover:text-foreground',
-          'hover:bg-muted focus:ring-ring focus:ring-2 focus:outline-none',
-          'transition-all duration-200',
-          disabled && 'pointer-events-none',
+          "absolute top-2 right-2 z-10 rounded-full p-1.5",
+          "text-muted-foreground hover:text-foreground",
+          "hover:bg-muted focus:ring-ring focus:ring-2 focus:outline-none",
+          "transition-all duration-200",
+          disabled && "pointer-events-none"
         )}
       >
         <X className="h-4 w-4" />
@@ -261,10 +263,10 @@ export const FileCard: React.FC<FileCardProps> = ({
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-lg',
-                    'bg-muted/50 transition-colors duration-200',
+                    "flex h-10 w-10 items-center justify-center rounded-lg",
+                    "bg-muted/50 transition-colors duration-200",
                     color,
-                    disabled && 'opacity-50',
+                    disabled && "opacity-50"
                   )}
                 >
                   {icon}
@@ -282,8 +284,8 @@ export const FileCard: React.FC<FileCardProps> = ({
                 <TooltipTrigger asChild>
                   <h3
                     className={cn(
-                      'truncate text-sm font-medium',
-                      'text-foreground transition-colors duration-200',
+                      "truncate text-sm font-medium",
+                      "text-foreground transition-colors duration-200"
                     )}
                   >
                     {trimmedFileName}
@@ -297,8 +299,8 @@ export const FileCard: React.FC<FileCardProps> = ({
             <div className="mt-1 flex items-center justify-between">
               <span
                 className={cn(
-                  'truncate text-xs',
-                  'text-muted-foreground transition-colors duration-200',
+                  "truncate text-xs",
+                  "text-muted-foreground transition-colors duration-200"
                 )}
               >
                 {formatFileSize(file.size)}
@@ -327,10 +329,10 @@ export const FileCard: React.FC<FileCardProps> = ({
                             <div className="flex items-center justify-center">
                               <Clock
                                 className={cn(
-                                  'h-4 w-4 transition-colors duration-200',
+                                  "h-4 w-4 transition-colors duration-200",
                                   isDefaultTime
-                                    ? 'text-muted-foreground hover:text-foreground'
-                                    : 'text-amber-500 hover:text-amber-600',
+                                    ? "text-muted-foreground hover:text-foreground"
+                                    : "text-amber-500 hover:text-amber-600"
                                 )}
                               />
                             </div>
@@ -356,7 +358,7 @@ export const FileCard: React.FC<FileCardProps> = ({
         </div>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
-export default FileCard;
+export default FileCard

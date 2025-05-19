@@ -1,14 +1,15 @@
-'use server';
+"use server"
 
-import { auth, signIn, signOut } from '@/auth';
-import { prisma } from '@/lib/db';
+import { auth, signIn, signOut } from "@/auth"
+
+import { prisma } from "@/lib/db"
 
 interface SaveUserKeysInDBProps {
-  googleID: string;
-  passphrase: string;
-  publicKey: string;
-  privateKey: string;
-  iv: string;
+  googleID: string
+  passphrase: string
+  publicKey: string
+  privateKey: string
+  iv: string
 }
 
 export async function SaveUserKeysInDB({
@@ -27,27 +28,27 @@ export async function SaveUserKeysInDB({
         privateKey,
         iv,
       },
-    });
-    if (!dbResponse) return null;
-    return dbResponse;
+    })
+    if (!dbResponse) return null
+    return dbResponse
   } catch (error) {
-    throw new Error(`KEYS ARE NOT APPENDED TO DB: ${(error as Error).message}`);
+    throw new Error(`KEYS ARE NOT APPENDED TO DB: ${(error as Error).message}`)
   }
 }
 
 export async function setPassphraseStatus(googleID: string) {
   try {
-    const user = await prisma.user.findUnique({ where: { googleID } });
-    if (!user) return null;
+    const user = await prisma.user.findUnique({ where: { googleID } })
+    if (!user) return null
     const updatedPassphraseStatus = await prisma.user.update({
       where: { googleID },
       data: { isPassphraseSet: true },
-    });
-    return updatedPassphraseStatus;
+    })
+    return updatedPassphraseStatus
   } catch (error) {
     throw new Error(
-      `PASSPRHASE STATUS NOT UPDATED IN DB: ${(error as Error).message}`,
-    );
+      `PASSPRHASE STATUS NOT UPDATED IN DB: ${(error as Error).message}`
+    )
   }
 }
 
@@ -56,13 +57,13 @@ export async function getPassphraseStatus(googleID: string) {
     const status = await prisma.user.findFirst({
       where: { googleID },
       select: { isPassphraseSet: true },
-    });
+    })
 
-    return status?.isPassphraseSet ?? false;
+    return status?.isPassphraseSet ?? false
   } catch (error) {
     throw new Error(
-      `FAILED TO GET PASSPHRASE STATUS: ${(error as Error).message}`,
-    );
+      `FAILED TO GET PASSPHRASE STATUS: ${(error as Error).message}`
+    )
   }
 }
 
@@ -70,10 +71,10 @@ export async function getUserKeyPair(googleID: string) {
   try {
     const keyPair = await prisma.userKeyPair.findUnique({
       where: { googleID },
-    });
-    return keyPair;
+    })
+    return keyPair
   } catch (error) {
-    throw new Error(`ERROR FETCHING RECORD: ${(error as Error).message}`);
+    throw new Error(`ERROR FETCHING RECORD: ${(error as Error).message}`)
   }
 }
 
@@ -82,45 +83,45 @@ export async function updatePassphraseHash(hash: string, googleID: string) {
     const keypair = await prisma.userKeyPair.update({
       where: { googleID },
       data: { passphrase: hash },
-    });
+    })
 
-    return keypair;
+    return keypair
   } catch (error) {
     throw new Error(
-      `ERROR UPDATING PASSPHRASE HASH: ${(error as Error).message}`,
-    );
+      `ERROR UPDATING PASSPHRASE HASH: ${(error as Error).message}`
+    )
   }
 }
 
 export async function togglePassphraseStatus(googleID: string) {
   try {
-    const user = await prisma.user.findUnique({ where: { googleID } });
-    if (!user) throw new Error('USER DOES NOT EXIST');
+    const user = await prisma.user.findUnique({ where: { googleID } })
+    if (!user) throw new Error("USER DOES NOT EXIST")
     const updatedUser = await prisma.user.update({
       where: { googleID },
       data: { isPassphraseSet: true },
-    });
-    return updatedUser;
+    })
+    return updatedUser
   } catch (error) {
     throw new Error(
-      `ERROR UPDATING PASSPHRASE STATUS: ${(error as Error).message}`,
-    );
+      `ERROR UPDATING PASSPHRASE STATUS: ${(error as Error).message}`
+    )
   }
 }
 
 export async function getCurrentUserSession() {
   try {
-    const session = await auth();
-    return session;
+    const session = await auth()
+    return session
   } catch (error) {
-    throw new Error((error as Error).message);
+    throw new Error((error as Error).message)
   }
 }
 
 export async function GoogleLoginHandler() {
-  await signIn('google');
+  await signIn("google")
 }
 
 export async function LogoutHandler() {
-  return await signOut({ redirect: false });
+  return await signOut({ redirect: false })
 }

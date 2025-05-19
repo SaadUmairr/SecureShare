@@ -1,10 +1,11 @@
-import { Code, LockIcon, ShieldIcon, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import GithubIcon from '../../public/github.svg';
-import { Footer } from './footer';
-import { Navbar } from './navbar';
-import { Button } from './ui/button';
+import Image from "next/image"
+import Link from "next/link"
+import { Code, LockIcon, ShieldIcon, Users } from "lucide-react"
+
+import GithubIcon from "../../public/github.svg"
+import { Footer } from "./footer"
+import { Navbar } from "./navbar"
+import { Button } from "./ui/button"
 
 export function AboutPage() {
   return (
@@ -182,7 +183,7 @@ export function AboutPage() {
       {/* Footer Section */}
       <Footer />
     </div>
-  );
+  )
 }
 
 // Make sure to import ShieldIcon at the top:

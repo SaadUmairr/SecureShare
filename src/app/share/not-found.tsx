@@ -1,6 +1,9 @@
-'use client';
+"use client"
 
-import { Badge } from '@/components/ui/badge';
+import { AlertCircle, FileIcon } from "lucide-react"
+import { motion } from "motion/react"
+
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -8,9 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { motion } from 'framer-motion';
-import { AlertCircle, FileIcon } from 'lucide-react';
+} from "@/components/ui/card"
 
 export default function NotFound() {
   return (
@@ -55,5 +56,5 @@ export default function NotFound() {
         </Card>
       </motion.div>
     </div>
-  );
+  )
 }
