@@ -111,8 +111,8 @@ export function ShareFile({
       try {
         const name = await decryptFileName(originalName, passphrase, iv)
         setDecryptedFileName(name)
-      } catch (error) {
-        console.error("Failed to decrypt file name:", error)
+      } catch {
+        toast.error("Filenames not decrypted, Try Again!")
       }
     }
 

@@ -1,17 +1,26 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { saveFileShareRecordInDb } from "@/actions/file"
+import Link from "next/link"
+import { redirect } from "next/navigation"
+import {
+  GetTrialShareLimitRemote,
+  saveFileShareRecordInDb,
+} from "@/actions/file"
 import { EncryptArrayBuffer, toUrlSafeBase64 } from "@/utils/crypto.util"
+import { getTrialShareLimit, setTrialShareLimit } from "@/utils/idb.util"
 import { deriveEncryptionKeyFromPassphrase } from "@/utils/key-ops.util"
 import axios from "axios"
 import bcrypt from "bcryptjs"
 import { AnimatePresence, motion, useAnimate } from "framer-motion"
 import {
   AlertTriangleIcon,
+  CopyIcon,
   EyeIcon,
   EyeOffIcon,
+  HomeIcon,
   Lock,
+  LockIcon,
   Upload,
 } from "lucide-react"
 import { customAlphabet } from "nanoid"
@@ -42,11 +51,12 @@ export function UploadTrialPage() {
   const [scope, animate] = useAnimate()
   const [files, setFiles] = useState<FileWithPath[]>([])
   const [passphraseValue, setPassphraseValue] = useState<string>("")
-  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false)
+  const [shareLink, setShareLink] = useState<string>("")
   const [passphraseDialogOpen, setpassphraseDialogOpen] =
     useState<boolean>(false)
-  const [isIslandView, setIsIslandView] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isIslandView, setIsIslandView] = useState<boolean>(false)
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
 
   const dropzoneStyles = {
     initial: {
@@ -183,10 +193,33 @@ export function UploadTrialPage() {
     setIsProcessing(true)
     const uploadingToast = toast.loading("ENCRYPTING...")
     try {
+      // Checking rate limit
+      const localLimit = await getTrialShareLimit()
+      if (
+        localLimit &&
+        (localLimit.count === 1 || localLimit.size > 50 * 1024 * 1024)
+      ) {
+        toast.error("Trial limit reached. Please log in to continue.")
+        toast.dismiss(uploadingToast)
+        return
+      }
       const ip = await axios.get("/api/get-data")
-
       const ipAddress = ip.data.ip
 
+      const remoteLimit = await GetTrialShareLimitRemote(ipAddress)
+      if (
+        remoteLimit &&
+        (remoteLimit.count >= 1 ||
+          (remoteLimit.size ?? BigInt(0)) > 50 * 1024 * 1024)
+      ) {
+        await setTrialShareLimit({
+          size: Number(remoteLimit.size),
+          count: remoteLimit.count,
+        })
+        toast.error("Trial limit reached. Please log in to continue.")
+        toast.dismiss(uploadingToast)
+        return
+      }
       const nanoidShort = customAlphabet(
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~",
 
@@ -233,8 +266,13 @@ export function UploadTrialPage() {
           expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         })
 
+        await setTrialShareLimit({ size: file.size, count: 1 })
+
         await axios.put(presignedURL, encryptedBlob)
       }
+      const link = `${window.location.origin}/share/${shareId}`
+      setShareLink(link)
+      setFiles([])
       toast.success("File Shared", { id: uploadingToast })
     } catch {
       toast.error("Try Again! Something went wrong.", { id: uploadingToast })
@@ -242,6 +280,14 @@ export function UploadTrialPage() {
       setIsProcessing(false)
     }
   }
+
+  const handleCopyShareLink = () => {
+    if (shareLink) {
+      navigator.clipboard.writeText(shareLink)
+      toast.success("Share link copied to clipboard!")
+    }
+  }
+
   return (
     <>
       <Dialog
@@ -255,55 +301,115 @@ export function UploadTrialPage() {
               Set a passphrase to protect your shared file.
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
-            <h4 className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
-              <AlertTriangleIcon className="h-4 w-4" />
-              Important
-            </h4>
-            <p className="mt-1 text-xs text-amber-600">
-              Make sure to set a new and distinct passphrase for file sharing.
-              Anyone with this passphrase can access your file until it expires.
-            </p>
-          </div>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="passphrase" className="text-right">
-                Passphrase
-              </Label>
-              <Input
-                id="passphrase"
-                type={passwordVisible ? "text" : "password"}
-                onChange={(e) => setPassphraseValue(e.target.value)}
-                className="col-span-3"
-                disabled={isProcessing}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-8 bottom-20 h-8 w-8 -translate-y-1/2"
-                onClick={togglePasswordVisibility}
-                type="button"
-                tabIndex={-1}
-              >
-                {passwordVisible ? (
-                  <EyeIcon className="h-4 w-4" />
-                ) : (
-                  <EyeOffIcon className="h-4 w-4" />
-                )}
-                <span className="sr-only">Toggle password visibility</span>
-              </Button>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={handleFilesEncryption}
-              disabled={isProcessing || passphraseValue.length <= 2}
-            >
-              Set Passphrase
-            </Button>
-          </DialogFooter>
+          {shareLink ? (
+            <>
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-1">
+                  <Label htmlFor="share-link">Share Link</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="share-link"
+                      value={shareLink}
+                      readOnly
+                      className="flex-1"
+                    />
+                    <Button
+                      size="icon"
+                      onClick={handleCopyShareLink}
+                      type="button"
+                    >
+                      <CopyIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="bg-muted/50 rounded-md p-3">
+                  <h4 className="flex items-center gap-1.5 text-sm font-medium">
+                    <Lock className="h-4 w-4 text-amber-500" />
+                    Security Information
+                  </h4>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Share this link and the passphrase with trusted recipients
+                    only.
+                  </p>
+                </div>
+
+                <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={() => setpassphraseDialogOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+                <h4 className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
+                  <AlertTriangleIcon className="h-4 w-4" />
+                  Important
+                </h4>
+                <p className="mt-1 text-xs text-amber-600">
+                  Make sure to set a new and distinct passphrase for file
+                  sharing. Anyone with this passphrase can access your file
+                  until it expires.
+                </p>
+              </div>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="passphrase" className="text-right">
+                    Passphrase
+                  </Label>
+                  <Input
+                    id="passphrase"
+                    type={passwordVisible ? "text" : "password"}
+                    onChange={(e) => setPassphraseValue(e.target.value)}
+                    className="col-span-3"
+                    disabled={isProcessing}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-8 bottom-20 h-8 w-8 -translate-y-1/2"
+                    onClick={togglePasswordVisibility}
+                    type="button"
+                    tabIndex={-1}
+                  >
+                    {passwordVisible ? (
+                      <EyeIcon className="h-4 w-4" />
+                    ) : (
+                      <EyeOffIcon className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">Toggle password visibility</span>
+                  </Button>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={handleFilesEncryption}
+                  disabled={isProcessing || passphraseValue.length <= 2}
+                >
+                  Set Passphrase
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
+      <nav className="flex h-16 w-full items-center justify-between border border-dashed px-4">
+        <div className="flex items-center gap-2">
+          <LockIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+          <Link href="/">
+            <span className="text-xl font-bold">SecureShare</span>
+          </Link>
+        </div>
+        <p className="text-muted-foreground font-bold italic">App Trial Page</p>
+        <Button variant="ghost" onClick={() => redirect("/")}>
+          <HomeIcon />
+        </Button>
+      </nav>
       <div className="container mx-auto p-4">
         <motion.div
           ref={scope}
@@ -389,8 +495,8 @@ export function UploadTrialPage() {
               disabled={isProcessing || files.length === 0}
               className="flex items-center gap-2 text-white"
             >
-              <Lock className="h-4 w-4" />
-              {isProcessing ? "Processing..." : "Encrypt"}
+              {/* <Lock className="h-4 w-4" /> */}
+              {isProcessing ? "Processing..." : "Share"}
             </Button>
           </motion.div>
         </motion.div>

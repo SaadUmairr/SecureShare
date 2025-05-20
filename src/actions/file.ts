@@ -253,3 +253,22 @@ export async function IncrementShareDownloadCount(shareId: string) {
     throw new Error(`COUNT INCREMENT FAILED: ${(error as Error).message}`)
   }
 }
+
+export async function GetTrialShareLimitRemote(ipAddress: string) {
+  try {
+    const limit = await prisma.fileShare.aggregate({
+      where: { ipAddress },
+      _sum: {
+        fileSize: true,
+      },
+      _count: {
+        ipAddress: true,
+      },
+    })
+    return { size: limit._sum.fileSize, count: limit._count.ipAddress  }
+  } catch (error) {
+    throw new Error(
+      (error as Error).message || "Unable to get trial limit from db"
+    )
+  }
+}

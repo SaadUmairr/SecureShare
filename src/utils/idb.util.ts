@@ -141,3 +141,23 @@ export async function setShareRateLimitLocal(limit: {
 }): Promise<void> {
   await saveDataLocally("identifier", SHARE_LIMIT_KEY, JSON.stringify(limit))
 }
+
+export async function setTrialShareLimit(limit: {
+  size: number
+  count: number
+}): Promise<void> {
+  await saveDataLocally("identifier", "trial", JSON.stringify(limit))
+}
+
+export async function getTrialShareLimit(): Promise<{
+  size: number
+  count: number
+} | null> {
+  try {
+    const data = await loadLocalData("identifier", "trial")
+    if (!data) return null
+    return JSON.parse(data)
+  } catch {
+    return null
+  }
+}
