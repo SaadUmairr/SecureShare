@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { DeleteFileRecord, getAllFiles } from "@/actions/file"
+import { deleteObjectFromS3 } from "@/aws/s3/delete-object"
+import { generateGetObjectSignedURL } from "@/aws/s3/get-object"
 import { useKeyPair } from "@/context/keypair.context"
 import { useUser } from "@/context/user.context"
 import { FileNameDecryptor, FileShareManager } from "@/utils/crypto.util"
@@ -41,8 +43,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { deleteObjectFromS3 } from "@/app/aws/s3/delete-object"
-import { generateGetObjectSignedURL } from "@/app/aws/s3/get-object"
 
 import { formatFileSize, getFileTypeInfo, trimFilename } from "./file-card"
 import { Button } from "./ui/button"
@@ -75,7 +75,7 @@ interface DecryptedFile {
 //   return `${formattedDate} at ${formattedTime}`;
 // };
 
-const getRemainingTime = (expirationTime: Date) => {
+export const getRemainingTime = (expirationTime: Date) => {
   const now = new Date()
 
   if (isBefore(expirationTime, now)) return "Expired"
@@ -86,7 +86,7 @@ const getRemainingTime = (expirationTime: Date) => {
 
   return `${hours}h ${minutes}m remaining`
 }
-const formatRemainingTime = (expirationTime: Date) => {
+export const formatRemainingTime = (expirationTime: Date) => {
   const now = new Date()
   if (isBefore(expirationTime, now)) return "Expired"
 

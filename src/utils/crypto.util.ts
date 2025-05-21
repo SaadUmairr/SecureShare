@@ -3,12 +3,11 @@ import {
   saveFileRecordInDb,
   saveFileShareRecordInDb,
 } from "@/actions/file"
+import { generateGetObjectSignedURL } from "@/aws/s3/get-object"
+import { generatePutObjectSignedURL } from "@/aws/s3/put-object"
 import axios from "axios"
 import bcrypt from "bcryptjs"
 import { FileWithPath } from "react-dropzone"
-
-import { generateGetObjectSignedURL } from "@/app/aws/s3/get-object"
-import { generatePutObjectSignedURL } from "@/app/aws/s3/put-object"
 
 import {
   base64ToArrayBuffer,

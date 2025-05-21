@@ -1,6 +1,5 @@
+import { generatePutObjectSignedURL } from "@/aws/s3/put-object"
 import axios from "axios"
-
-import { generatePutObjectSignedURL } from "@/app/aws/s3/put-object"
 
 import { EncryptedFile } from "./crypto.util"
 

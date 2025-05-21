@@ -7,7 +7,6 @@ import { useUser } from "@/context/user.context"
 import { savePassphraseLocally } from "@/utils/idb.util"
 import { PassphrasePepper } from "@/utils/passphrase.util"
 import bcrypt from "bcryptjs"
-import { AnimatePresence, motion } from "framer-motion"
 import {
   AlertTriangle,
   Check,
@@ -16,6 +15,7 @@ import {
   Lock,
   Shield,
 } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"

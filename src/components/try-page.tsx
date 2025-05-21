@@ -7,12 +7,12 @@ import {
   GetTrialShareLimitRemote,
   saveFileShareRecordInDb,
 } from "@/actions/file"
+import { generatePutObjectSignedURL } from "@/aws/s3/put-object"
 import { EncryptArrayBuffer, toUrlSafeBase64 } from "@/utils/crypto.util"
 import { getTrialShareLimit, setTrialShareLimit } from "@/utils/idb.util"
 import { deriveEncryptionKeyFromPassphrase } from "@/utils/key-ops.util"
 import axios from "axios"
 import bcrypt from "bcryptjs"
-import { AnimatePresence, motion, useAnimate } from "framer-motion"
 import {
   AlertTriangleIcon,
   CopyIcon,
@@ -23,6 +23,7 @@ import {
   LockIcon,
   Upload,
 } from "lucide-react"
+import { AnimatePresence, motion, useAnimate } from "motion/react"
 import { customAlphabet } from "nanoid"
 import { useTheme } from "next-themes"
 import Dropzone, { FileRejection, FileWithPath } from "react-dropzone"
@@ -39,7 +40,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { generatePutObjectSignedURL } from "@/app/aws/s3/put-object"
 
 import { FileCard } from "./file-card"
 

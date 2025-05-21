@@ -43,7 +43,7 @@ export function NavMain() {
             <SidebarMenuItem>
               <Link href="/auth/files">
                 <SidebarMenuButton>
-                  <FilesIcon /> Uploaded files
+                  <FilesIcon /> All Files
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

@@ -1,11 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { GoogleLoginHandler } from "@/actions/user"
 import { UserIcon } from "lucide-react"
-import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 
@@ -30,30 +28,16 @@ export function GoogleClientButton() {
 }
 
 export function GuestClientButton() {
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-
-  const handleGuestLogin = async () => {
-    setLoading(true)
-    try {
-      router.replace("/try")
-    } catch {
-      toast.error("Oops! Something went wrong.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <Button
-      variant="outline"
-      type="button"
-      className="w-full gap-x-4 border-[#1446B5] dark:border-[#1446B5]"
-      onClick={handleGuestLogin}
-      disabled={loading}
-    >
-      <UserIcon absoluteStrokeWidth />
-      {loading ? "Just a moment..." : "Try as guest"}
-    </Button>
+    <Link href="/try">
+      <Button
+        variant="outline"
+        type="button"
+        className="w-full gap-x-4 border-[#1446B5] dark:border-[#1446B5]"
+      >
+        <UserIcon absoluteStrokeWidth />
+        Try as guest
+      </Button>
+    </Link>
   )
 }

@@ -1,5 +1,7 @@
 "use server"
 
+import { deleteObjectFromS3 } from "@/aws/s3/delete-object"
+
 import { prisma } from "@/lib/db"
 
 interface saveFileRecordInDbProp {
@@ -138,7 +140,7 @@ export async function saveFileShareRecordInDb({
 export async function fetchShareDetails(shareId: string) {
   try {
     const details = await prisma.fileShare.findUnique({ where: { shareId } })
-    if (!details) throw new Error("NO SHARE RECORD FOUND")
+    if (!details) return null
     return details
   } catch (error) {
     throw new Error(`ERROR IN SHARE DETAIL: ${(error as Error).message}`)
@@ -159,6 +161,9 @@ export async function fetchAllSharedFiles(googleID: string) {
   try {
     const records = await prisma.fileShare.findMany({
       where: { userId: googleID },
+      include: {
+        originalFile: true,
+      },
     })
     return records
   } catch (error) {
@@ -265,10 +270,24 @@ export async function GetTrialShareLimitRemote(ipAddress: string) {
         ipAddress: true,
       },
     })
-    return { size: limit._sum.fileSize, count: limit._count.ipAddress  }
+    return { size: limit._sum.fileSize, count: limit._count.ipAddress }
   } catch (error) {
     throw new Error(
       (error as Error).message || "Unable to get trial limit from db"
     )
+  }
+}
+
+export async function deleteSharedFile(fileId: string, fileName: string) {
+  if (!fileId) throw new Error("filename is missing")
+  console.log("DELETING : ", fileId, " :: ", fileName)
+  try {
+    const deleteResponse = await prisma.fileShare.delete({
+      where: { id: fileId },
+    })
+    if (!deleteResponse) throw new Error("Error deleting file record")
+    await deleteObjectFromS3(`upload/share/${fileName}`)
+  } catch (error) {
+    throw new Error((error as Error).message || "Could not delete shared file")
   }
 }

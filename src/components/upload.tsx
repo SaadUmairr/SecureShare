@@ -11,8 +11,8 @@ import {
   setUploadRateLimitLocal,
 } from "@/utils/idb.util"
 import { filesUploader } from "@/utils/s3.util"
-import { AnimatePresence, motion, useAnimate } from "framer-motion"
 import { Lock, Upload } from "lucide-react"
+import { AnimatePresence, motion, useAnimate } from "motion/react"
 import { useTheme } from "next-themes"
 import Dropzone, { FileRejection, FileWithPath } from "react-dropzone"
 import { toast } from "sonner"

@@ -116,7 +116,7 @@ export function FeaturesPage() {
               </h3>
             </div>
             <p className="mb-4 text-slate-600 dark:text-slate-300">
-              Coming Soon: Secure sharing without even creating an account.
+              Secure sharing without even creating an account.
             </p>
             <ul className="space-y-2 text-slate-600 dark:text-slate-300">
               <li className="flex items-start gap-2">

@@ -16,7 +16,6 @@ import {
   formatDistanceToNow,
   isBefore,
 } from "date-fns"
-import { AnimatePresence, motion } from "framer-motion"
 import {
   AlertCircle,
   CheckCircle2,
@@ -28,6 +27,7 @@ import {
   Shield,
   Timer,
 } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
