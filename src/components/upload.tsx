@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { checkUploadRateLimit } from "@/actions/file"
-import { useFilesContext } from "@/context/file.context"
+import { ExtendedFile, useFilesContext } from "@/context/file.context"
 import { useKeyPair } from "@/context/keypair.context"
 import { useUser } from "@/context/user.context"
 import { Encryptor } from "@/utils/crypto.util"
@@ -12,7 +12,7 @@ import {
 } from "@/utils/idb.util"
 import { filesUploader } from "@/utils/s3.util"
 import { Lock, Upload } from "lucide-react"
-import { AnimatePresence, motion, useAnimate } from "motion/react"
+import { AnimatePresence, motion, useAnimate, easeIn, easeOut } from "motion/react"
 import { useTheme } from "next-themes"
 import Dropzone, { FileRejection, FileWithPath } from "react-dropzone"
 import { toast } from "sonner"
@@ -71,7 +71,7 @@ export function UploadMainPage() {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: easeOut,
       },
     },
     exit: {
@@ -79,7 +79,7 @@ export function UploadMainPage() {
       y: -20,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: easeIn,
       },
     },
   }
@@ -140,10 +140,15 @@ export function UploadMainPage() {
 
   const onDropAccepted = useCallback(
     (acceptedFiles: FileWithPath[]) => {
-      setContextFiles(acceptedFiles)
+      const enrichedFiles: ExtendedFile[] = acceptedFiles.map((file) => {
+        ;(file as ExtendedFile).retentionTime = "1d"
+        return file as ExtendedFile
+      })
+      setContextFiles(enrichedFiles)
     },
     [setContextFiles]
   )
+
   const onDropRejected = useCallback((fileRejections: FileRejection[]) => {
     for (const rejection of fileRejections) {
       const { file, errors } = rejection

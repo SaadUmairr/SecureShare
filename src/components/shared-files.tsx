@@ -126,10 +126,7 @@ export function SharedFilesClient({
   const handleStopSharing = async () => {
     try {
       setIsStoppingShare(true)
-      console.log("DELETE: ", id, " :: ", sharedFileName)
       await deleteSharedFile(id, sharedFileName)
-
-      console.log("Stopped sharing file:", id)
     } catch {
       toast.error("Oops! Try refreshing the page then Try Again!")
     } finally {

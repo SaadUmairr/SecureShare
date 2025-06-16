@@ -280,7 +280,6 @@ export async function GetTrialShareLimitRemote(ipAddress: string) {
 
 export async function deleteSharedFile(fileId: string, fileName: string) {
   if (!fileId) throw new Error("filename is missing")
-  console.log("DELETING : ", fileId, " :: ", fileName)
   try {
     const deleteResponse = await prisma.fileShare.delete({
       where: { id: fileId },

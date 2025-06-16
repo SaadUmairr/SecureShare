@@ -23,7 +23,13 @@ import {
   LockIcon,
   Upload,
 } from "lucide-react"
-import { AnimatePresence, motion, useAnimate } from "motion/react"
+import {
+  AnimatePresence,
+  easeIn,
+  easeOut,
+  motion,
+  useAnimate,
+} from "motion/react"
 import { customAlphabet } from "nanoid"
 import { useTheme } from "next-themes"
 import Dropzone, { FileRejection, FileWithPath } from "react-dropzone"
@@ -96,7 +102,7 @@ export function UploadTrialPage() {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: easeOut,
       },
     },
     exit: {
@@ -104,7 +110,7 @@ export function UploadTrialPage() {
       y: -20,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: easeIn,
       },
     },
   }

@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { ExtendedFile } from "@/context/file.context"
 import {
   Archive,
   BookOpen,
@@ -36,7 +37,7 @@ import {
 } from "@/components/ui/tooltip"
 
 interface FileCardProps {
-  file: File
+  file: ExtendedFile
   onRemove: () => void
   disabled?: boolean
 }
@@ -228,6 +229,11 @@ export const FileCard: React.FC<FileCardProps> = ({
   const { icon, color, label } = getFileTypeInfo(file)
   const isDefaultTime = selectedTime === "1d"
 
+  const handleTimeRetentionChange = (time: string) => {
+    setSelectedTime(time)
+    file.retentionTime = time
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -320,9 +326,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                     <TooltipTrigger asChild>
                       <Select
                         value={selectedTime}
-                        onValueChange={setSelectedTime}
-                        // TODO: Attach time optiosn with files
-                        disabled
+                        onValueChange={(e) => handleTimeRetentionChange(e)}
                       >
                         <SelectTrigger className="h-6 w-6 border-0 bg-transparent p-0">
                           <SelectValue asChild>

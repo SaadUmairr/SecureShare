@@ -5,9 +5,9 @@ import {
 } from "@/actions/file"
 import { generateGetObjectSignedURL } from "@/aws/s3/get-object"
 import { generatePutObjectSignedURL } from "@/aws/s3/put-object"
+import { ExtendedFile } from "@/context/file.context"
 import axios from "axios"
 import bcrypt from "bcryptjs"
-import { FileWithPath } from "react-dropzone"
 
 import {
   base64ToArrayBuffer,
@@ -54,17 +54,32 @@ export interface FileShareManagerProp extends FileDownloadManagerProp {
  */
 
 export async function Encryptor(
-  files: FileWithPath | FileWithPath[],
+  files: ExtendedFile | ExtendedFile[],
   publicKey: CryptoKey,
   googleID: string
 ): Promise<EncryptedFile[]> {
   if (typeof window === "undefined") {
     throw new Error("❌ This function should only run on the client side!")
   }
+  const now = new Date()
+  const ONE_DAY = 24 * 60 * 60 * 1000
   const filesArray = Array.isArray(files) ? files : [files]
   const encryptedFiles: EncryptedFile[] = []
 
   for (const file of filesArray) {
+    const expiry = file.retentionTime ?? "1d"
+
+    const duration =
+      expiry === "1d"
+        ? 1 * ONE_DAY
+        : expiry === "1w"
+          ? 7 * ONE_DAY
+          : expiry === "2w"
+            ? 14 * ONE_DAY
+            : expiry === "1m"
+              ? 30 * ONE_DAY
+              : 1 * ONE_DAY
+    const expirationTime = new Date(now.getTime() + duration)
     const fileBuffer = await file.arrayBuffer()
 
     const { symmetricKey, rawSymmetricKey } = await generateSymmetricKeyPair()
@@ -116,7 +131,7 @@ export async function Encryptor(
       googleID,
       fileIV: contentIVBase64,
       fileSize: file.size,
-      expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      expireAt: expirationTime,
     })
     encryptedFiles.push({
       fileName: {

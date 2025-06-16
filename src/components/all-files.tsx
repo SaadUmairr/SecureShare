@@ -7,7 +7,15 @@ import { generateGetObjectSignedURL } from "@/aws/s3/get-object"
 import { useKeyPair } from "@/context/keypair.context"
 import { useUser } from "@/context/user.context"
 import { FileNameDecryptor, FileShareManager } from "@/utils/crypto.util"
-import { differenceInMinutes, format, isBefore } from "date-fns"
+import {
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInMonths,
+  differenceInSeconds,
+  format,
+  isBefore,
+} from "date-fns"
 import {
   AlertTriangle,
   Copy,
@@ -69,23 +77,55 @@ interface DecryptedFile {
   fileIV: string
 }
 
-// const getIstTime = (date: Date) => {
-//   const formattedDate = format(date, 'dd/MM');
-//   const formattedTime = format(date, 'hh:mm a');
-//   return `${formattedDate} at ${formattedTime}`;
-// };
-
 export const getRemainingTime = (expirationTime: Date) => {
   const now = new Date()
 
   if (isBefore(expirationTime, now)) return "Expired"
 
-  const totalMinutes = differenceInMinutes(expirationTime, now)
-  const hours = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
+  let remaining = expirationTime.getTime() - now.getTime()
+  const parts: string[] = []
 
-  return `${hours}h ${minutes}m remaining`
+  const units = [
+    {
+      label: "mo",
+      value: () => differenceInMonths(new Date(now.getTime() + remaining), now),
+      ms: 30 * 24 * 60 * 60 * 1000,
+    },
+    {
+      label: "d",
+      value: () => differenceInDays(new Date(now.getTime() + remaining), now),
+      ms: 24 * 60 * 60 * 1000,
+    },
+    {
+      label: "h",
+      value: () => differenceInHours(new Date(now.getTime() + remaining), now),
+      ms: 60 * 60 * 1000,
+    },
+    {
+      label: "m",
+      value: () =>
+        differenceInMinutes(new Date(now.getTime() + remaining), now),
+      ms: 60 * 1000,
+    },
+    {
+      label: "s",
+      value: () =>
+        differenceInSeconds(new Date(now.getTime() + remaining), now),
+      ms: 1000,
+    },
+  ]
+
+  for (const { label, value, ms } of units) {
+    const count = value()
+    if (count > 0) {
+      parts.push(`${count}${label}`)
+      remaining -= count * ms
+    }
+  }
+
+  return parts.length ? parts.join(" ") + " remaining" : "Expired"
 }
+
 export const formatRemainingTime = (expirationTime: Date) => {
   const now = new Date()
   if (isBefore(expirationTime, now)) return "Expired"
