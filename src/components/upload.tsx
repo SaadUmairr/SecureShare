@@ -12,7 +12,13 @@ import {
 } from "@/utils/idb.util"
 import { filesUploader } from "@/utils/s3.util"
 import { Lock, Upload } from "lucide-react"
-import { AnimatePresence, motion, useAnimate, easeIn, easeOut } from "motion/react"
+import {
+  AnimatePresence,
+  easeIn,
+  easeOut,
+  motion,
+  useAnimate,
+} from "motion/react"
 import { useTheme } from "next-themes"
 import Dropzone, { FileRejection, FileWithPath } from "react-dropzone"
 import { toast } from "sonner"
