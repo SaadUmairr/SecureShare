@@ -1,8 +1,7 @@
-import Image from "next/image"
 import Link from "next/link"
 import { Code, LockIcon, ShieldIcon, Users } from "lucide-react"
+import { SiGithub } from "react-icons/si"
 
-import GithubIcon from "../../public/github.svg"
 import { Footer } from "./footer"
 import { Navbar } from "./navbar"
 import { Button } from "./ui/button"
@@ -173,7 +172,8 @@ export function AboutPage() {
             </Link>
             <Link href="https://github.com/SaadUmairr/SecureShare">
               <Button className="flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-black px-6 py-3 font-medium text-white transition-colors hover:bg-gray-900 dark:border-slate-600">
-                <Image src={GithubIcon} alt="Github" height={20} width={20} />
+                {/* <Image src={GithubIcon} alt="Github" height={20} width={20} /> */}
+                <SiGithub size={24} color="#fff" />
                 Contribute on GitHub
               </Button>
             </Link>

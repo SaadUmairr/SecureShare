@@ -204,7 +204,7 @@ export const PassphraseInput = () => {
                   >
                     <Lock className="text-primary h-5 w-5 flex-shrink-0" />
                     <span>
-                      Is processed locally on your device and
+                      Is processed locally on your device and &nbsp;
                       <b>never leaves</b> your device
                     </span>
                   </motion.li>

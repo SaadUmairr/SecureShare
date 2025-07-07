@@ -49,7 +49,7 @@ import { Label } from "@/components/ui/label"
 
 import { FileCard } from "./file-card"
 
-const MAX_FILES_PER_DAY = 1
+const MAX_FILES_PER_DAY = 2
 const MAX_UPLOAD_SIZE_PER_DAY = 50 * 1024 * 1024 // 50 MB
 
 export function UploadTrialPage() {
@@ -203,7 +203,8 @@ export function UploadTrialPage() {
       const localLimit = await getTrialShareLimit()
       if (
         localLimit &&
-        (localLimit.count === 1 || localLimit.size > 50 * 1024 * 1024)
+        (localLimit.count === MAX_FILES_PER_DAY ||
+          localLimit.size > MAX_UPLOAD_SIZE_PER_DAY)
       ) {
         toast.error("Trial limit reached. Please log in to continue.")
         toast.dismiss(uploadingToast)
@@ -215,8 +216,8 @@ export function UploadTrialPage() {
       const remoteLimit = await GetTrialShareLimitRemote(ipAddress)
       if (
         remoteLimit &&
-        (remoteLimit.count >= 1 ||
-          (remoteLimit.size ?? BigInt(0)) > 50 * 1024 * 1024)
+        (remoteLimit.count >= MAX_FILES_PER_DAY ||
+          (remoteLimit.size ?? BigInt(0)) > MAX_UPLOAD_SIZE_PER_DAY)
       ) {
         await setTrialShareLimit({
           size: Number(remoteLimit.size),

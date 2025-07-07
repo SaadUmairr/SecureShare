@@ -1,18 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { LockIcon } from "lucide-react"
-import { useTheme } from "next-themes"
+import { FaGithub } from "react-icons/fa"
 
-import GithubIcon from "../../public/github.svg"
 import ThemeToggler from "./theme-toggle"
 import { Button } from "./ui/button"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { theme } = useTheme()
 
   return (
     <nav className="sticky top-0 z-10 bg-white shadow-sm dark:bg-slate-800 dark:text-white">
@@ -39,11 +36,8 @@ export function Navbar() {
             className="text-sm font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
             target="_blank"
           >
-            <Button
-              variant={theme === "dark" ? "ghost" : "default"}
-              className={`${theme === "light" ? "rounded-full bg-slate-800" : ""}`}
-            >
-              <Image src={GithubIcon} width={20} height={20} alt="Github" />
+            <Button variant="ghost" size="icon">
+              <FaGithub className="text-2xl" />
             </Button>
           </Link>
           <Link
