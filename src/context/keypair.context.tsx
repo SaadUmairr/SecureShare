@@ -38,9 +38,6 @@ export function KeyPairContextProvider({
     const { keyPair, exportedPublicKeyBase64 } =
       await generateAsymmetricKeyPair()
 
-    setPublicKey(keyPair.publicKey)
-    setPrivateKey(keyPair.privateKey)
-
     const { encryptedPrivateKey, iv } = await encryptPrivateKey(
       keyPair.privateKey,
       passphrase,
@@ -63,6 +60,8 @@ export function KeyPairContextProvider({
       privateKey: encryptedPrivateKey,
       iv,
     })
+
+    return { publicKey: keyPair.publicKey, privateKey: keyPair.privateKey }
   }
 
   async function KeyPairMainHandler() {
@@ -75,9 +74,7 @@ export function KeyPairContextProvider({
         localKeyPair.publicKey,
         localKeyPair.iv
       )
-      setPublicKey(importedPublicKey)
-      setPrivateKey(decryptedPrivateKey)
-      return
+      return { publicKey: importedPublicKey, privateKey: decryptedPrivateKey }
     }
     const dbKeyPair = await getUserKeyPair(googleID)
     if (dbKeyPair) {
@@ -94,22 +91,39 @@ export function KeyPairContextProvider({
         privateKey: dbKeyPair.privateKey,
         iv: dbKeyPair.iv,
       })
-      setPublicKey(importedPublicKey)
-      setPrivateKey(decryptedPrivateKey)
-      return
+      return { publicKey: importedPublicKey, privateKey: decryptedPrivateKey }
     }
-    await KeyPairGenerationHandler()
+    return await KeyPairGenerationHandler()
   }
 
   useEffect(() => {
     if (!googleID || !passphrase) return
-    KeyPairMainHandler()
+
+    let cancelled = false
+
+    const loadKeys = async () => {
+      try {
+        const { publicKey, privateKey } = await KeyPairMainHandler()
+        if (cancelled) return
+        setPublicKey(publicKey)
+        setPrivateKey(privateKey)
+      } catch (error) {
+        console.error("Failed to load key pair:", error)
+        // Optionally handle error (e.g., redirect to passphrase setup or show UI error)
+      }
+    }
+
+    loadKeys()
+
+    return () => {
+      cancelled = true
+    }
   }, [googleID, passphrase])
 
   return (
-    <KeyPairContext value={{ publicKey, privateKey }}>
+    <KeyPairContext.Provider value={{ publicKey, privateKey }}>
       {children}
-    </KeyPairContext>
+    </KeyPairContext.Provider>
   )
 }
 

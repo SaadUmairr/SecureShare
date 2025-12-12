@@ -1,3 +1,3 @@
 {
-  "buildCommand": "npx prisma generate && next build"
+  "buildCommand": "pnpm dlx prisma generate && next build"
 }

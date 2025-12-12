@@ -181,6 +181,7 @@ export async function EncryptArrayBuffer(
   )
   return { encryptedData, iv, encryptedName }
 }
+
 export async function decryptFileName(
   encryptedNameBase64: string,
   passphrase: string,
@@ -190,10 +191,13 @@ export async function decryptFileName(
     atob(fromUrlSafeBase64(encryptedNameBase64)),
     (c) => c.charCodeAt(0)
   )
+  const encryptedNameData = new Uint8Array(encryptedNameBytes)
 
   const iv = Uint8Array.from(atob(fromUrlSafeBase64(ivBase64)), (c) =>
     c.charCodeAt(0)
   )
+  
+  const ivCopy = new Uint8Array(iv)
 
   try {
     const derivedKey = await deriveEncryptionKeyFromPassphrase(passphrase)
@@ -201,10 +205,10 @@ export async function decryptFileName(
     const decryptedBuffer = await crypto.subtle.decrypt(
       {
         name: "AES-GCM",
-        iv,
+        iv: ivCopy,
       },
       derivedKey,
-      encryptedNameBytes
+      encryptedNameData
     )
 
     const decodedName = new TextDecoder().decode(decryptedBuffer)
@@ -244,6 +248,7 @@ export interface DecryptedFile {
  * @param privateKey The private key (RSA-OAEP) corresponding to the public key used during encryption.
  * @returns A Promise that resolves to an array of DecryptedFile objects.
  */
+
 export async function decryptFiles(
   encryptedFiles: EncryptedFile | EncryptedFile[],
   privateKey: CryptoKey
@@ -261,11 +266,13 @@ export async function decryptFiles(
     const encryptedSymmetricKeyArrayBuffer = base64ToArrayBuffer(
       encryptedFile.encryptedSymmetricKey
     )
+  
+    const encryptedKeyData = new Uint8Array(encryptedSymmetricKeyArrayBuffer)
 
     const symmetricKeyRaw = await crypto.subtle.decrypt(
       { name: "RSA-OAEP" },
       privateKey,
-      encryptedSymmetricKeyArrayBuffer
+      encryptedKeyData
     )
 
     const symmetricKey = await crypto.subtle.importKey(
@@ -276,7 +283,9 @@ export async function decryptFiles(
       ["decrypt"]
     )
 
-    const iv = base64ToArrayBuffer(encryptedFile.iv)
+    const ivBuffer = base64ToArrayBuffer(encryptedFile.iv)
+  
+    const iv = new Uint8Array(ivBuffer)
 
     const encryptedDataBuffer = await encryptedFile.encryptedBlob.arrayBuffer()
 
@@ -305,17 +314,22 @@ export async function FileNameDecryptor(
   const encryptedFilenameBase64 = fromUrlSafeBase64(fileName)
 
   const encryptedFilenameBytes = base64ToUint8Array(encryptedFilenameBase64)
+  
+  const encryptedFilenameData = new Uint8Array(encryptedFilenameBytes)
 
   const fileNameIV = base64ToUint8Array(fileNameIVBase64)
+  
+  const fileNameIVCopy = new Uint8Array(fileNameIV)
 
   const encryptedSymmetricKeyBytes = base64ToUint8Array(
     encryptedSymmetricKeyBase64
   )
+  const encryptedKeyData = new Uint8Array(encryptedSymmetricKeyBytes)
   try {
     const symmetricKeyBuffer = await crypto.subtle.decrypt(
       { name: "RSA-OAEP" },
       privateKey,
-      encryptedSymmetricKeyBytes
+      encryptedKeyData
     )
 
     const symmetricKey = await crypto.subtle.importKey(
@@ -329,10 +343,10 @@ export async function FileNameDecryptor(
     const decryptedFileNameBuffer = await crypto.subtle.decrypt(
       {
         name: "AES-GCM",
-        iv: fileNameIV,
+        iv: fileNameIVCopy,
       },
       symmetricKey,
-      encryptedFilenameBytes
+      encryptedFilenameData
     )
     return new TextDecoder().decode(decryptedFileNameBuffer)
   } catch (error) {
@@ -359,11 +373,13 @@ export const decryptSymmetricKey = async (
     throw new Error("❌ This function should only run on the client side!")
   }
   const encryptedKeyBytes = base64ToUint8Array(encryptedSymmetricKeyBase64)
+  
+  const encryptedKeyData = new Uint8Array(encryptedKeyBytes)
 
   const symmetricKeyBuffer = await crypto.subtle.decrypt(
     { name: "RSA-OAEP" },
     privateKey,
-    encryptedKeyBytes
+    encryptedKeyData
   )
 
   return await crypto.subtle.importKey(
@@ -384,14 +400,15 @@ export const decryptFile = async (
     throw new Error("❌ This function should only run on the client side!")
   }
   const iv = base64ToUint8Array(ivBase64)
+  
+  const ivCopy = new Uint8Array(iv)
 
   return await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: ivCopy },
     symmetricKey,
     encryptedFileBuffer
   )
 }
-
 export const triggerDownload = (buffer: ArrayBuffer, filename: string) => {
   if (typeof window === "undefined") {
     throw new Error("❌ This function should only run on the client side!")

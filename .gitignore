@@ -140,3 +140,6 @@ dist
 
 migrations/
 test/
+/src/generated/prisma
+
+*/generated/*

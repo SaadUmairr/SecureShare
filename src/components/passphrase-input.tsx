@@ -202,7 +202,7 @@ export const PassphraseInput = () => {
                     variants={itemVariants}
                     className="bg-muted/50 flex items-center gap-3 rounded-lg p-3"
                   >
-                    <Lock className="text-primary h-5 w-5 flex-shrink-0" />
+                    <Lock className="text-primary h-5 w-5 shrink-0" />
                     <span>
                       Is processed locally on your device and &nbsp;
                       <b>never leaves</b> your device
@@ -213,7 +213,7 @@ export const PassphraseInput = () => {
                     variants={itemVariants}
                     className="bg-muted/50 flex items-center gap-3 rounded-lg p-3"
                   >
-                    <Check className="h-5 w-5 flex-shrink-0 text-green-500" />
+                    <Check className="h-5 w-5 shrink-0 text-green-500" />
                     <span>
                       Is solely used to secure your information within this
                       application
@@ -224,7 +224,7 @@ export const PassphraseInput = () => {
                     variants={itemVariants}
                     className="bg-muted/50 flex items-center gap-3 rounded-lg p-3"
                   >
-                    <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
+                    <AlertTriangle className="h-5 w-5 shrink-0 text-yellow-500" />
                     <span>
                       <b>Warning:</b> If you forget your passphrase, you will
                       lose access to your data
@@ -438,7 +438,7 @@ const RequirementItem = ({ met, text }: { met: boolean; text: string }) => {
           : "bg-muted text-muted-foreground"
       )}
     >
-      {met && <Check className="h-3 w-3 flex-shrink-0" />}
+      {met && <Check className="h-3 w-3 shrink-0" />}
       <span>{text}</span>
     </motion.div>
   )

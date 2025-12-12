@@ -164,7 +164,7 @@ export async function fetchAllSharedFiles(googleID: string) {
       include: {
         originalFile: true,
       },
-    })
+    }) 
     return records
   } catch (error) {
     throw new Error(`SHARE RECORDS NOT FETCHED: ${(error as Error).message}`)

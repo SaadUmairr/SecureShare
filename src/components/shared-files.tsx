@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { deleteSharedFile } from "@/actions/file"
 import { useKeyPair } from "@/context/keypair.context"
+import { FileShare } from "@/generated/prisma/client"
 import { FileNameDecryptor } from "@/utils/crypto.util"
-import { FileShare } from "@prisma/client"
 import { format } from "date-fns"
 import {
   Ban,
@@ -60,11 +60,10 @@ import { formatFileSize, trimFilename } from "./file-card"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 
-interface SharedFilesClientProp
-  extends Omit<
-    FileShare,
-    "ipAddress" | "originalFileId" | "passphraseHash" | "userId"
-  > {
+interface SharedFilesClientProp extends Omit<
+  FileShare,
+  "ipAddress" | "originalFileId" | "passphraseHash" | "userId"
+> {
   keyBase64: string
   fileNameIV: string
   originalFileName: string
@@ -431,7 +430,7 @@ export function SharedFilesClient({
               </div>
 
               <div className="bg-muted/50 flex items-start gap-2 rounded-md p-3">
-                <Lock className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
                 <div>
                   <h4 className="text-sm font-medium">Security Information</h4>
                   <p className="text-muted-foreground mt-1 text-xs">

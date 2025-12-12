@@ -11,7 +11,7 @@ interface RedirectProps {
 }
 
 export function Redirect({ to, label }: RedirectProps) {
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(30)
   const router = useRouter()
 
   useEffect(() => {
@@ -22,10 +22,10 @@ export function Redirect({ to, label }: RedirectProps) {
       if (!mounted) return
 
       const elapsed = Date.now() - startTime
-      const duration = 800 // Total animation time in ms
+      const duration = 800
 
-      // Quick progression: 0-100% in 800ms with fast start
-      const newProgress = Math.min(100, (elapsed / duration) * 100)
+      const progressFrom30 = Math.min(70, (elapsed / duration) * 70)
+      const newProgress = 30 + progressFrom30
       setProgress(newProgress)
 
       if (elapsed < duration) {
@@ -35,13 +35,8 @@ export function Redirect({ to, label }: RedirectProps) {
       }
     }
 
-    // Initial jump to 30% immediately
-    setProgress(30)
-
-    // Start smooth animation
     requestAnimationFrame(updateProgress)
 
-    // Safety net timeout
     const timeout = setTimeout(() => {
       if (mounted) router.push(to)
     }, 1000)

@@ -190,14 +190,14 @@ export async function encryptPrivateKey(
   if (typeof window === "undefined") {
     throw new Error("❌ This function should only run on the client side!")
   }
-  const privateKeyBase64 = await crypto.subtle.exportKey("pkcs8", privateKey)
+  const privateKeyBuffer = await crypto.subtle.exportKey("pkcs8", privateKey)
   const derivedKey = await deriveEncryptionKey(passphrase, googleID)
   const iv = crypto.getRandomValues(new Uint8Array(16))
 
   const encryptedBuffer = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
     derivedKey,
-    privateKeyBase64
+    privateKeyBuffer
   )
 
   return {
@@ -216,8 +216,8 @@ export async function decryptPrivateKey(
     throw new Error("❌ This function should only run on the client side!")
   }
   const derivedKey = await deriveEncryptionKey(passphrase, googleID)
-  const iv = base64ToArrayBuffer(ivBase64)
-  const encryptedBuffer = base64ToArrayBuffer(encryptedPrivateKeyBase64)
+  const iv = base64ToArrayBuffer(ivBase64).slice()
+  const encryptedBuffer = base64ToArrayBuffer(encryptedPrivateKeyBase64).slice()
 
   const decryptedBuffer = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv },
@@ -240,7 +240,7 @@ export async function importPublicKey(
   if (typeof window === "undefined") {
     throw new Error("❌ This function should only run on the client side!")
   }
-  const publicKeyBuffer = base64ToArrayBuffer(publicKeyBase64)
+  const publicKeyBuffer = base64ToArrayBuffer(publicKeyBase64).slice()
 
   return await crypto.subtle.importKey(
     "spki",

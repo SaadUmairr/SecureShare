@@ -8,7 +8,7 @@ import { Navbar } from "@/components/navbar"
 export default async function LoginPage() {
   const session = await auth()
 
-  if (session) redirect("/auth/upload")
+  if (session) return redirect("/auth/upload")
   return (
     <>
       <div className="absolute w-full">
